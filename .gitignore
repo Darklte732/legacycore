@@ -1,0 +1,68 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+**/node_modules/
+
+# testing
+/coverage
+
+# next.js build outputs (but not source files)
+/.next/cache/
+/.next/server/
+/.next/static/
+/out/
+
+# production
+/build
+**/build/
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+.env
+
+# vercel
+/.vercel/
+**/.vercel/
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# specific build caches
+/legacy-core/.next/cache/
+/legacy-core/node_modules/
+/legacy-backup/
+/fresh-deploy/
+/simple-deploy/
+/deployment/.next/cache/
+
+# large files (handled by Git LFS)
+**/*.pack
+**/*.pack.old
+**/*.pack.gz
+**/*.bundle
+
+# standalone builds
+**/standalone/
+
+# temporary and backup folders
+**/backup/
+**/temp/
+**/tmp/
+
+# external project references
+../clean-legacycore/
+../fresh-legacycore/
+../minimal-legacycore/
+
+.vercel
