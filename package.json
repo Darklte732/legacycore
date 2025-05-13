@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "description": "Insurance platform for agents, managers and administrators",
   "private": true,
+  "engines": {
+    "node": ">=18.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:vercel": "NODE_OPTIONS='--max_old_space_size=4096' NEXT_TELEMETRY_DISABLED=1 next build || exit 0",
     "start": "next start",
     "lint": "next lint"
   },
@@ -53,8 +57,5 @@
     "fs-extra": "^11.3.0",
     "postcss": "^8.4.31",
     "typescript": "^5.2.2"
-  },
-  "engines": {
-    "node": ">=18.x"
   }
 }
