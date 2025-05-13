@@ -1,26 +1,49 @@
-const { execSync } = require('child_process');
+#!/usr/bin/env node
 
-console.log('=== LEGACYCORE PRODUCTION MODE (LOCAL) ===');
+const fs = require('fs-extra');
+const path = require('path');
+const { spawn } = require('child_process');
+const dotenv = require('dotenv');
 
-// Step 1: Build the application
-console.log('\n1. Building the application...');
-try {
-  execSync('npm run build', { stdio: 'inherit' });
-  console.log('Build completed successfully!');
-} catch (error) {
-  console.error('Build failed:', error.message);
-  process.exit(1);
-}
+// Load environment variables
+dotenv.config({ path: '.env.local' });
+dotenv.config({ path: '.env' });
 
-// Step 2: Start the production server
-console.log('\n2. Starting production server...');
-console.log('Serving at: http://localhost:3000');
-console.log('===================================================');
+// Detect platform (Windows or non-Windows)
+const isWindows = process.platform === 'win32';
+const npxCmd = isWindows ? 'npx.cmd' : 'npx';
 
-try {
-  // The execSync will block, keeping the process in foreground
-  execSync('npm run start', { stdio: 'inherit' });
-} catch (error) {
-  console.error('Server error:', error.message);
-  process.exit(1);
-} 
+// Ensure production mode
+process.env.NODE_ENV = 'production';
+process.env.NEXT_TELEMETRY_DISABLED = '1';
+
+console.log('🚀 Starting LegacyCore in production mode');
+
+// Run the next start command
+const server = spawn(npxCmd, ['next', 'start'], {
+  stdio: 'inherit',
+  env: {
+    ...process.env,
+    NODE_OPTIONS: '--max_old_space_size=4096'
+  }
+});
+
+console.log('💻 Server running at http://localhost:3000');
+
+// Handle server termination
+server.on('close', (code) => {
+  console.log(`Server exited with code ${code}`);
+});
+
+// Handle process termination
+process.on('SIGINT', () => {
+  console.log('🛑 Received SIGINT, shutting down server...');
+  server.kill();
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('🛑 Received SIGTERM, shutting down server...');
+  server.kill();
+  process.exit(0);
+}); 
