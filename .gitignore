@@ -67,3 +67,7 @@ next-env.d.ts
 ../minimal-legacycore/
 
 .vercel
+
+# Utility scripts
+git-cleanup.js
+project-cleanup.js
