@@ -27,15 +27,5 @@
         }
       ]
     }
-  ],
-  "env": {
-    "NODE_ENV": "production",
-    "NEXT_PUBLIC_SUPABASE_URL": "https://iufyuzmigirugcufrtvt.supabase.co",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Znl1em1pZ2lydWdjdWZydHZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMzQxMjcsImV4cCI6MjA2MDYxMDEyN30.V38OGEX1Oy3gFfu5ClGWRk3xYAhb_DVr-5ojOQZ1UfU",
-    "SUPABASE_URL": "https://iufyuzmigirugcufrtvt.supabase.co",
-    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Znl1em1pZ2lydWdjdWZydHZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMzQxMjcsImV4cCI6MjA2MDYxMDEyN30.V38OGEX1Oy3gFfu5ClGWRk3xYAhb_DVr-5ojOQZ1UfU",
-    "SUPABASE_COOKIE_SECURE": "false",
-    "COOKIE_NAME": "legacycore-auth-token",
-    "COOKIE_MAX_AGE": "86400"
-  }
+  ]
 }

@@ -1,10 +1,32 @@
+"use client";
+
 import { useState, useEffect } from 'react';
-import useAuth from './useAuth';
+import { useAuth } from './useAuth';
 
 // Define role types
 export type UserRole = 'admin' | 'agent' | 'manager' | 'user' | null;
 
-export default function useRole() {
+// Type for the hook return value
+export type UseRoleReturn = {
+  role: UserRole;
+  loading: boolean;
+};
+
+// Static return value for SSR
+const staticRoleValue: UseRoleReturn = {
+  role: 'admin',
+  loading: false
+};
+
+// Determine if we're running in a server context
+const isServer = typeof window === 'undefined';
+
+export function useRole(): UseRoleReturn {
+  // If running in a server context during build, return a static value
+  if (isServer) {
+    return staticRoleValue;
+  }
+
   const { user, loading: authLoading } = useAuth();
   const [role, setRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);
@@ -32,4 +54,7 @@ export default function useRole() {
   }, [user, authLoading]);
 
   return { role, loading };
-} 
+}
+
+// Export as default and named export for flexibility
+export default useRole; 
