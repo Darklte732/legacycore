@@ -13,7 +13,9 @@
     "deploy:direct": "node direct-vercel-deploy.js",
     "deploy:windows": "deploy-vercel.bat",
     "deploy:legacy": "node deploy-legacy-core.js",
+    "deploy:full": "node deploy-full-app.js",
     "test:build": "node local-test.js",
+    "test:full": "node build-and-run-full-production.js",
     "lint": "next lint"
   },
   "keywords": [],

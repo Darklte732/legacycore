@@ -1,6 +1,112 @@
-# LegacyCore
+# LegacyCore - Full-Featured Insurance Platform
 
-This repository contains the Next.js application for LegacyCore.
+## About
+
+LegacyCore is a comprehensive insurance platform for agents, managers, and administrators. It offers a complete suite of tools to manage policies, applications, commissions, and more.
+
+## 🔴 IMPORTANT: Full vs. Minimal Deployment
+
+This project supports two deployment modes:
+
+### 1. Full Deployment (RECOMMENDED)
+- Deploys the entire application with all features and functionality
+- Includes all UI components, hooks, and pages
+- Suitable for production use
+
+### 2. Minimal Deployment 
+- Creates a stripped-down version with limited functionality
+- Only includes basic pages and components
+- Suitable for demos or testing only
+
+## How to Deploy the FULL Application
+
+### Prerequisites
+- Node.js 18.x or higher
+- Git with Git LFS installed
+- Vercel account
+- GitHub account
+
+### Option 1: Automated Full Deployment (Recommended)
+
+**Windows (Command Prompt):**
+```
+deploy-full-app.bat
+```
+
+**Windows (PowerShell):**
+```
+.\deploy-full-app.ps1
+```
+
+**Any Platform (Node.js):**
+```
+npm run deploy:full
+```
+
+### Option 2: Test Full Production Build Locally First
+
+```
+npm run test:full
+```
+
+This builds and runs the complete application in production mode locally at http://localhost:3000.
+
+### Option 3: Manual Full Deployment Steps
+
+1. **Prepare your repository:**
+   ```
+   git init
+   git lfs install
+   git lfs track "**/*.pack" "**/*.wasm" "**/*.map" "**/*.bundle"
+   git add .gitattributes
+   git add .
+   git commit -m "Full LegacyCore application"
+   git remote add origin https://github.com/yourusername/legacycore.git
+   git push -u origin master
+   ```
+
+2. **Deploy to Vercel:**
+   ```
+   npm install -g vercel
+   vercel login
+   npm run build
+   vercel --prod
+   ```
+
+## Development
+
+```
+npm install
+npm run dev
+```
+
+## Environment Variables
+
+The application requires these environment variables:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_COOKIE_SECURE`
+- `COOKIE_NAME`
+- `COOKIE_MAX_AGE`
+
+See `.env.local` for examples.
+
+## Support and Documentation
+
+For detailed deployment instructions, see:
+- [FULL-DEPLOYMENT.md](./FULL-DEPLOYMENT.md) - Complete deployment guide
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - General deployment information
+
+## Troubleshooting
+
+If you encounter build errors during deployment:
+1. Check that all required environment variables are set
+2. Ensure Git LFS is correctly configured for large files
+3. For dynamic routes, ensure proper server-side rendering
+
+For Vercel deployment issues, refer to the error logs in the Vercel dashboard.
 
 ## Running in Production Mode Locally
 
