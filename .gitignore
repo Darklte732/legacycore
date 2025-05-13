@@ -8,10 +8,14 @@
 # testing
 /coverage
 
-# next.js build outputs (but not source files)
+# next.js build outputs (include only the necessary parts)
 /.next/cache/
-/.next/server/
-/.next/static/
+/.next/server/chunks/
+/.next/server/pages/
+/.next/server/app/api/
+/.next/static/chunks/pages/
+/.next/static/development/
+/.next/static/webpack/
 /out/
 
 # production
@@ -53,9 +57,6 @@ next-env.d.ts
 **/*.pack.gz
 **/*.bundle
 
-# standalone builds
-**/standalone/
-
 # temporary and backup folders
 **/backup/
 **/temp/
@@ -71,5 +72,14 @@ next-env.d.ts
 # Utility scripts
 git-cleanup.js
 project-cleanup.js
+
+# Keep .next/static/images, .next/server/chunks/app
+!/.next/static/images/
+!/.next/server/chunks/app/
+!/.next/server/app/page.js
+!/.next/server/app/layout.js
+
+# Keep server output
+!/.next/standalone/
 
 .vercel
