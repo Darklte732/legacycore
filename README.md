@@ -43,7 +43,46 @@ deploy-full-app.bat
 npm run deploy:full
 ```
 
-### Option 2: Test Full Production Build Locally First
+### Option 2: Minimal Core Deployment (For Missing Directory Errors)
+
+If you're encountering the "Couldn't find any `pages` or `app` directory" error:
+
+**Windows (Command Prompt):**
+```
+minimal-core-deploy.bat
+```
+
+**Any Platform (Node.js):**
+```
+npm run deploy:minimal-core
+```
+
+This creates a minimal deployment that:
+- Creates the essential directory structure Vercel requires
+- Deploys a placeholder page
+- Gets past the directory validation errors
+
+### Option 3: Static Export Deployment (For Hook-Related Build Errors)
+
+If you're encountering build errors related to hooks such as `useRole` or `useAuth`:
+
+**Windows (Command Prompt):**
+```
+static-export-vercel.bat
+```
+
+**Any Platform (Node.js):**
+```
+npm run deploy:static
+```
+
+This creates a static export that:
+- Works around hook-related build errors
+- Creates fallback pages for problematic routes
+- Ensures the project structure is preserved
+- Successfully deploys to Vercel
+
+### Option 3: Test Full Production Build Locally First
 
 ```
 npm run test:full
@@ -51,7 +90,7 @@ npm run test:full
 
 This builds and runs the complete application in production mode locally at http://localhost:3000.
 
-### Option 3: Manual Full Deployment Steps
+### Option 4: Manual Full Deployment Steps
 
 1. **Prepare your repository:**
    ```
@@ -71,42 +110,6 @@ This builds and runs the complete application in production mode locally at http
    vercel login
    npm run build
    vercel --prod
-   ```
-
-## Development
-
-```
-npm install
-npm run dev
-```
-
-## Environment Variables
-
-The application requires these environment variables:
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `SUPABASE_COOKIE_SECURE`
-- `COOKIE_NAME`
-- `COOKIE_MAX_AGE`
-
-See `.env.local` for examples.
-
-## Support and Documentation
-
-For detailed deployment instructions, see:
-- [FULL-DEPLOYMENT.md](./FULL-DEPLOYMENT.md) - Complete deployment guide
-- [DEPLOYMENT.md](./DEPLOYMENT.md) - General deployment information
-
-## Troubleshooting
-
-If you encounter build errors during deployment:
-1. Check that all required environment variables are set
-2. Ensure Git LFS is correctly configured for large files
-3. For dynamic routes, ensure proper server-side rendering
-
-For Vercel deployment issues, refer to the error logs in the Vercel dashboard.
 
 ## Running in Production Mode Locally
 

@@ -1,0 +1,42 @@
+# Deployment folders
+deploy-fixed/
+simple-deploy/
+deployment/
+.vercel/
+fresh-deploy/
+github-deploy/
+incremental-deploy/
+legacy-backup/
+legacy-core/
+minimal-deploy/
+minimal-deployment/
+minimal-deployment-1747096211936/
+minimal-next-deploy/
+temp-check/
+temp-legacycore/
+vercel-deploy-fix/
+
+# Build artifacts
+.next/
+
+# Deployment scripts that shouldn't be deployed
+*.bat
+*.ps1
+*.js
+!next.config.js
+!middleware.js
+!tailwind.config.js
+
+# Documentation
+*.md
+!README.md
+
+# Don't ignore actual app code
+!app/**
+!components/**
+!hooks/**
+!lib/**
+!pages/**
+!public/**
+!styles/**
+!types/** 
