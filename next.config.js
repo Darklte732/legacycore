@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
+  swcMinify: false,
   experimental: {
     // This is experimental but helps with some server-side rendering issues
     serverComponentsExternalPackages: ['@supabase/auth-helpers-nextjs']
@@ -17,10 +17,11 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  // Vercel-compatible settings
+  // Vercel-compatible settings but simplified
   output: 'standalone',
   // Allow importing images
   images: {
+    unoptimized: true,
     domains: ['avatars.githubusercontent.com', 'lh3.googleusercontent.com'],
   },
   // Specify routes to exclude from static export
