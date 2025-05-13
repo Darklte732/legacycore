@@ -18,12 +18,9 @@ const staticRoleValue: UseRoleReturn = {
   loading: false
 };
 
-// Determine if we're running in a server context
-const isServer = typeof window === 'undefined';
-
 export function useRole(): UseRoleReturn {
-  // If running in a server context during build, return a static value
-  if (isServer) {
+  // Using typeof window check inside the component to avoid issues during Vercel build
+  if (typeof window === 'undefined') {
     return staticRoleValue;
   }
 

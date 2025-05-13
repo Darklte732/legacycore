@@ -24,12 +24,9 @@ const staticAuthValue: UseAuthReturn = {
   resetPassword: async () => ({ error: null }),
 };
 
-// Determine if we're running in a server context
-const isServer = typeof window === 'undefined';
-
 export function useAuth(): UseAuthReturn {
-  // If running in a server context during build, return a static value
-  if (isServer) {
+  // Using typeof window check inside the component to avoid issues during Vercel build
+  if (typeof window === 'undefined') {
     return staticAuthValue;
   }
 
