@@ -13,13 +13,9 @@ const nextConfig = {
     // number of pages that should be kept simultaneously without being disposed
     pagesBufferLength: 2,
   },
-  // Optimize build output
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
-  // Vercel-compatible settings but simplified
-  output: 'standalone',
-  // Allow importing images
+  // Output static site instead of serverless
+  output: 'export',
+  // Allow importing images with unoptimized setting for static export
   images: {
     unoptimized: true,
     domains: ['avatars.githubusercontent.com', 'lh3.googleusercontent.com'],
