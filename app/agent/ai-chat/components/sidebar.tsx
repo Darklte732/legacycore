@@ -2,7 +2,7 @@
 
 import { FC, useState, useEffect } from 'react'
 import Image from 'next/image'
-import { useUserSession } from '@/hooks/useUserSession'
+import useUserSession from '@/hooks/useUserSession'
 import { PlusCircle, Search, Trash2, Edit, Check, X } from 'lucide-react'
 
 // Simple interface for the sidebar component

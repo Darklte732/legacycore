@@ -1,43 +1,19 @@
-'use client';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import type { Database } from '@/lib/supabase/database.types';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
-export const createClient = () => {
-  if (typeof window === 'undefined') {
-    // Return a mock client for SSR/build time
-    return {
-      auth: {
-        getSession: async () => ({ data: { session: null }, error: null }),
-        getUser: async () => ({ data: { user: null }, error: null }),
-        signInWithPassword: async () => ({ data: null, error: null }),
-        signOut: async () => ({ error: null }),
-      },
-      from: () => ({
-        select: () => ({
-          eq: () => ({
-            single: async () => ({ data: null, error: null }),
-            order: () => ({
-              limit: async () => ({ data: null, error: null }),
-            }),
-          }),
-          in: () => ({ data: null, error: null }),
-          order: () => ({
-            limit: async () => ({ data: null, error: null }),
-          }),
-        }),
-        insert: () => ({ data: null, error: null }),
-        update: () => ({
-          eq: () => ({ data: null, error: null }),
-        }),
-        delete: () => ({
-          eq: () => ({ data: null, error: null }),
-        }),
-      }),
-    };
+// Create the Supabase client for client-side use
+export const supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    storageKey: 'legacycore-auth-token'
   }
-  
-  return createClientComponentClient<Database>();
-};
+})
 
-export default createClient; 
+// Export a createClient function for compatibility
+export const createClient = () => {
+  return supabase
+}
+
+export default supabase 

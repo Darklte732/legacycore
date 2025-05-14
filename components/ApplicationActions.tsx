@@ -6,7 +6,7 @@ interface ApplicationActionsProps {
   status?: string;
 }
 
-export default function ApplicationActions({ applicationId, status }: ApplicationActionsProps) {
+export function ApplicationActions({ applicationId, status }: ApplicationActionsProps) {
   return (
     <div className="flex items-center space-x-2">
       <Link 
@@ -36,4 +36,6 @@ export default function ApplicationActions({ applicationId, status }: Applicatio
       )}
     </div>
   );
-} 
+}
+
+export default ApplicationActions; 

@@ -1,13 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false, // Disable strict mode to reduce hydration warnings
-  swcMinify: true, // For smaller bundles in production
-  // Allow importing images with unoptimized setting
-  images: {
-    unoptimized: true,
-    domains: ['avatars.githubusercontent.com', 'lh3.googleusercontent.com'],
-  },
-  // Ignore linting errors during build to ensure deployment success
+  reactStrictMode: false, // Disable strict mode to reduce hydration issues
+  images: { unoptimized: true },
+  // Ignore type and lint errors for production
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -15,33 +10,38 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Enable minification for better performance
+  swcMinify: true,
   // Don't add X-Powered-By header
   poweredByHeader: false,
-  // Configure webpack for better compatibility
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      // Resolve browser-specific packages
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-        crypto: require.resolve('crypto-browserify'),
-      };
-    }
-    return config;
+  // Use standard output mode instead of standalone
+  output: 'export',
+  // Set a longer timeout for static page generation
+  staticPageGenerationTimeout: 180,
+  // Suppress hydration warnings in development
+  onDemandEntries: {
+    // Period (in ms) where the server will keep pages in the buffer
+    maxInactiveAge: 60 * 1000,
+    // Number of pages that should be kept simultaneously without being disposed
+    pagesBufferLength: 5,
   },
-  // Enable experimental features to improve rendering
+  // Add trailing slash to all URLs
+  trailingSlash: true,
+  // Disable experimental features that might cause issues
   experimental: {
-    // For better component stability
-    esmExternals: 'loose',
-    // Support for React server components
-    serverActions: true,
-    // Enable output standalone for Vercel
-    outputStandalone: true
+    // Turn off experimental features that cause problems
+    esmExternals: false,
+    // Completely disable server actions to avoid cookie issues
+    serverActions: false,
+    // Disable CSS optimization to avoid experimental features
+    optimizeCss: false,
+    // Include server actions (for Next.js middleware)
+    serverComponentsExternalPackages: []
   },
-  // Optional: Add output options for better Vercel deployment
-  output: 'standalone',
+  // Ensure CSS is processed correctly
+  webpack: (config) => {
+    return config;
+  }
 }
 
 module.exports = nextConfig

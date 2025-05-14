@@ -14,21 +14,32 @@ export type UseRoleReturn = {
 
 // Static return value for SSR
 const staticRoleValue: UseRoleReturn = {
-  role: 'admin',
-  loading: false
+  role: null, // Changed from 'admin' to null for consistent hydration
+  loading: true // Always return loading=true for server rendered content
 };
 
+// Determine if we're running in a server context
+const isServer = typeof window === 'undefined';
+
 export function useRole(): UseRoleReturn {
-  // Using typeof window check inside the component to avoid issues during Vercel build
-  if (typeof window === 'undefined') {
+  // If running in a server context during build, return a static value
+  if (isServer) {
     return staticRoleValue;
   }
 
   const { user, loading: authLoading } = useAuth();
   const [role, setRole] = useState<UserRole>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // Handle client-side mounting to prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
+    if (!mounted) return; // Skip on first render to prevent hydration mismatch
+    
     if (authLoading) return;
 
     if (!user) {
@@ -48,7 +59,12 @@ export function useRole(): UseRoleReturn {
     }
     
     setLoading(false);
-  }, [user, authLoading]);
+  }, [user, authLoading, mounted]);
+
+  // If not mounted yet, return the same state that was rendered on the server
+  if (!mounted) {
+    return staticRoleValue;
+  }
 
   return { role, loading };
 }

@@ -1,323 +1,93 @@
-# LegacyCore - Full-Featured Insurance Platform
+# LegacyCore Project
 
-## About
-
-LegacyCore is a comprehensive insurance platform for agents, managers, and administrators. It offers a complete suite of tools to manage policies, applications, commissions, and more.
-
-## 🔴 IMPORTANT: Full vs. Minimal Deployment
-
-This project supports two deployment modes:
-
-### 1. Full Deployment (RECOMMENDED)
-- Deploys the entire application with all features and functionality
-- Includes all UI components, hooks, and pages
-- Suitable for production use
-
-### 2. Minimal Deployment 
-- Creates a stripped-down version with limited functionality
-- Only includes basic pages and components
-- Suitable for demos or testing only
-
-## How to Deploy the FULL Application
-
-### Prerequisites
-- Node.js 18.x or higher
-- Git with Git LFS installed
-- Vercel account
-- GitHub account
-
-### Option 1: Automated Full Deployment (Recommended)
-
-**Windows (Command Prompt):**
-```
-deploy-full-app.bat
-```
-
-**Windows (PowerShell):**
-```
-.\deploy-full-app.ps1
-```
-
-**Any Platform (Node.js):**
-```
-npm run deploy:full
-```
-
-### Option 2: Minimal Core Deployment (For Missing Directory Errors)
-
-If you're encountering the "Couldn't find any `pages` or `app` directory" error:
-
-**Windows (Command Prompt):**
-```
-minimal-core-deploy.bat
-```
-
-**Any Platform (Node.js):**
-```
-npm run deploy:minimal-core
-```
-
-This creates a minimal deployment that:
-- Creates the essential directory structure Vercel requires
-- Deploys a placeholder page
-- Gets past the directory validation errors
-
-### Option 3: Static Export Deployment (For Hook-Related Build Errors)
-
-If you're encountering build errors related to hooks such as `useRole` or `useAuth`:
-
-**Windows (Command Prompt):**
-```
-static-export-vercel.bat
-```
-
-**Any Platform (Node.js):**
-```
-npm run deploy:static
-```
-
-This creates a static export that:
-- Works around hook-related build errors
-- Creates fallback pages for problematic routes
-- Ensures the project structure is preserved
-- Successfully deploys to Vercel
-
-### Option 3: Test Full Production Build Locally First
-
-```
-npm run test:full
-```
-
-This builds and runs the complete application in production mode locally at http://localhost:3000.
-
-### Option 4: Manual Full Deployment Steps
-
-1. **Prepare your repository:**
-   ```
-   git init
-   git lfs install
-   git lfs track "**/*.pack" "**/*.wasm" "**/*.map" "**/*.bundle"
-   git add .gitattributes
-   git add .
-   git commit -m "Full LegacyCore application"
-   git remote add origin https://github.com/yourusername/legacycore.git
-   git push -u origin master
-   ```
-
-2. **Deploy to Vercel:**
-   ```
-   npm install -g vercel
-   vercel login
-   npm run build
-   vercel --prod
-
-## Running in Production Mode Locally
-
-There are multiple ways to run the application in production mode locally:
-
-### Method 1: Using the Batch File (Windows)
-
-1. Run the batch file:
-   ```
-   run-production-local.bat
-   ```
-
-This will:
-- Build the application with `npm run build`
-- Copy necessary static assets
-- Start the server in production mode
-
-### Method 2: Using run-fixed-production.js
-
-This enhanced server includes proper static asset serving:
-
-1. Build the application:
-   ```
-   npm run build
-   ```
-
-2. Run the enhanced server:
-   ```
-   node run-fixed-production.js
-   ```
-
-### Method 3: Using Node.js Standalone Server
-
-1. Build the application:
-   ```
-   npm run build
-   ```
-
-2. Copy static assets to the standalone directory:
-   ```
-   xcopy "public" ".next\standalone\public" /E /I /Y
-   ```
-
-3. Start the standalone server:
-   ```
-   node .next/standalone/server.js
-   ```
-
-## Deploying to Vercel via GitHub
-
-### Step 1: Prepare for GitHub
-
-1. Install Git LFS if not already installed:
-   ```bash
-   git lfs install
-   ```
-
-2. Create a new GitHub repository
-   - Go to [GitHub](https://github.com) and log in
-   - Click "New" to create a new repository
-   - Name it "legacycore" or your preferred name
-   - Keep it private if it contains sensitive information
-
-3. Add your GitHub repository as a remote:
-   ```bash
-   git remote add origin https://github.com/yourusername/legacycore.git
-   ```
-
-4. Push your code to GitHub:
-   ```bash
-   git checkout -b main
-   git add .
-   git commit -m "Initial commit"
-   git push -u origin main
-   ```
-
-### Step 2: Deploy on Vercel
-
-1. Go to [Vercel](https://vercel.com) and log in (or sign up)
-
-2. Click "Add New..." → "Project"
-
-3. Import your GitHub repository:
-   - Find your repository in the list
-   - Click "Import"
-
-4. Configure the project:
-   - Framework Preset: Next.js
-   - Root Directory: ./ (default)
-   - Build Command: npm run build
-   - Output Directory: .next
-
-5. Add environment variables:
-   - Click "Environment Variables"
-   - Add all variables from your .env file, including:
-     - NEXT_PUBLIC_SUPABASE_URL
-     - NEXT_PUBLIC_SUPABASE_ANON_KEY
-     - SUPABASE_URL
-     - SUPABASE_ANON_KEY
-     - COOKIE_NAME
-     - COOKIE_MAX_AGE
-
-6. Click "Deploy"
-
-7. Once deployment is complete, Vercel will provide you with a URL to access your application
-
-### Troubleshooting Deployment Issues
-
-If your deployment fails, check the following:
-
-1. **Large Files**: Make sure Git LFS is properly set up for files over 100MB
-   ```bash
-   git lfs track "*.pack" "*.wasm" "*.node"
-   git add .gitattributes
-   git push
-   ```
-
-2. **Missing Dependencies**: Ensure all dependencies are in package.json
-
-3. **Build Errors**: Check the Vercel build logs for specific errors
-
-4. **Minimal Deployment**: If the full application won't deploy, try a minimal deployment:
-   ```bash
-   node minimal-next-deploy.js
-   ```
-
-For detailed instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
-
-## Development Mode
-
-To run in development mode:
-
-```
-npm run dev
-```
-
-## Notes
-
-- Production mode builds and runs with optimizations
-- If you encounter missing styles or images, verify the static asset paths
-- The enhanced server (Method 2) provides better static file handling
-
-## Features
-
-- User authentication with role-based access
-- Dashboard for agents and managers
-- Application management
-- AI-powered chat assistance
-- Calendar and scheduling
-- Commission tracking
+This is the main repository for the LegacyCore project. This README contains important information about the project structure and deployment process.
 
 ## Project Structure
 
-This project follows a specific structure for Vercel deployment:
+This project has a nested structure:
 
-- The main Next.js application is located in the `legacy-core` directory
-- The root directory contains configuration files for Vercel deployment
+- Root directory: Contains configuration files for deployment
+- `legacy-core/`: Contains the actual Next.js application codebase
 
-## Development
+## Vercel Deployment
 
-To develop the application locally:
+This project is configured for deployment on Vercel. The main configuration is in the `vercel.json` file which tells Vercel to build from the nested `legacy-core` directory.
 
-## Deployment Instructions
+### Environment Variables
 
-### Running in Production Mode
+For deployment to work correctly, you must configure these environment variables in your Vercel project:
 
-To build and run the application in production mode locally:
+- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anon key
+- `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key
 
-```bash
-# Windows
-run-production-local.bat
+### Deployment Steps
 
-# Manual steps
-node install-dependencies.js
-node run-production-local.js
-```
+#### Via GitHub Integration
 
-### Fixing Image Asset Issues
+1. Push your code to GitHub
+2. Connect your GitHub repository to Vercel
+3. Configure the environment variables in the Vercel dashboard
+4. Deploy the project
 
-If you encounter 404 errors for image files, use:
+#### Via Vercel CLI
 
-```bash
-# Windows
-fix-image-assets.bat
-
-# Manual steps
-node install-dependencies.js
-node fix-image-assets.js
-```
-
-Then restart your server:
-```bash
-node .next/standalone/server.js
-```
-
-### Deploying to Vercel
-
-To build and deploy to Vercel with all assets correctly handled:
+For manual deployment:
 
 ```bash
-# Windows
-deploy-to-vercel-with-image-fix.bat
+# Install Vercel CLI if you haven't already
+npm i -g vercel
 
-# Manual steps
-node install-dependencies.js
-npx next build
-node fix-image-assets.js
+# Login to Vercel
+vercel login
+
+# Deploy (from the project root)
+vercel
+
+# For production deployment
 vercel --prod
 ```
 
-For detailed instructions, see [BUILD-AND-DEPLOY-INSTRUCTIONS.md](BUILD-AND-DEPLOY-INSTRUCTIONS.md).
+## Local Development
+
+For local development, navigate to the legacy-core directory:
+
+```bash
+cd legacy-core
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+## Running in Production Mode Locally
+
+To run the production build locally:
+
+```bash
+cd legacy-core
+npm install
+npm run build
+npm run start
+```
+
+## Architecture
+
+- **Framework**: Next.js with both App Router and Pages Router
+- **Language**: TypeScript/JavaScript
+- **Styling**: Tailwind CSS
+- **Backend**: Supabase for database and authentication
+- **Deployment**: Vercel
+
+For more details about the architecture, see the `LegacyCore-Architecture.md` file.
+
+## Troubleshooting Deployment
+
+If you encounter issues with deployment:
+
+1. Check that the `vercel.json` file is correctly configured
+2. Verify all environment variables are set in the Vercel dashboard
+3. Review the Vercel build logs for specific errors
+4. Ensure the `next.config.js` file in the `legacy-core` directory is properly configured

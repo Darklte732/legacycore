@@ -1,10 +1,11 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { FileText, CheckCircle2, Clock, Users, CalendarClock, MessageSquare, FileEdit, TrendingUp, DollarSign, AlertTriangle, AlertOctagon } from 'lucide-react'
+import { FileText, CheckCircle2, Clock, Users, CalendarClock, MessageSquare, FileEdit, TrendingUp, DollarSign, AlertTriangle, AlertOctagon, Filter, ChevronDown, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/card'
+import { format } from 'date-fns'
 
 // Define types for our data
 interface Application {
@@ -84,8 +85,363 @@ export default function AgentDashboard() {
   const [loading, setLoading] = useState(true)
   const [userName, setUserName] = useState('')
   const [commissionPeriod, setCommissionPeriod] = useState<'weekly' | 'monthly' | 'ytd'>('monthly')
+  const [error, setError] = useState<string | null>(null)
+  const [stats, setStats] = useState({
+    total_applications: 0,
+    total_commission: 0,
+    annual_premium: 0,
+    monthly_premium: 0,
+    pending_applications: 0,
+    approved_applications: 0,
+    declined_applications: 0,
+    approval_rate: 0,
+    avg_time_to_decision: 0,
+    last_updated: new Date().toISOString(),
+    term_count: 0,
+    whole_count: 0,
+    universal_count: 0,
+    final_expense_count: 0
+  })
+  const [timePeriod, setTimePeriod] = useState('month-to-date')
+  const [recentActivities, setRecentActivities] = useState([])
+  const [activityLoading, setActivityLoading] = useState(true)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false)
   const supabase = createClient()
   
+  // Helper function to format current date/time
+  function formatCurrentDate() {
+    const today = new Date()
+    return today.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric'
+    })
+  }
+
+  // Function to manually refresh data
+  const refreshData = () => {
+    setRefreshTrigger(prev => prev + 1)
+  }
+
+  // Calculate date ranges based on selected time period
+  const getDateRange = (period: string) => {
+    const today = new Date()
+    const startDate = new Date()
+    
+    switch(period) {
+      case 'month-to-date':
+        startDate.setDate(1) // First day of current month
+        break
+      case 'last-month':
+        startDate.setMonth(today.getMonth() - 1, 1) // First day of last month
+        const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0)
+        return {
+          start: startDate,
+          end: endOfLastMonth
+        }
+      case 'quarter-to-date':
+        const currentQuarter = Math.floor(today.getMonth() / 3)
+        startDate.setMonth(currentQuarter * 3, 1) // First day of current quarter
+        break
+      case 'six-months-to-date':
+        startDate.setMonth(today.getMonth() - 6, 1) // 6 months ago
+        break
+      case 'year-to-date':
+        startDate.setMonth(0, 1) // January 1st of current year
+        break
+      case 'custom':
+        // This would be handled by a date picker component
+        startDate.setMonth(today.getMonth() - 1) // Default to 1 month ago
+        break
+      default:
+        startDate.setMonth(today.getMonth() - 1) // Default to 1 month ago
+        break
+    }
+    
+    return {
+      start: startDate,
+      end: today
+    }
+  }
+
+  // Function to get time period display name
+  const getTimePeriodDisplayName = (period: string) => {
+    switch(period) {
+      case 'month-to-date': return 'Month to Date'
+      case 'last-month': return 'Last Month'
+      case 'quarter-to-date': return 'Quarter to Date'
+      case 'six-months-to-date': return '6 Months to Date'
+      case 'year-to-date': return 'Year to Date'
+      case 'custom': return 'Custom Range'
+      default: return 'Month to Date'
+    }
+  }
+
+  // Setup real-time subscription for agent_applications changes
+  useEffect(() => {
+    // Create subscription for real-time updates
+    const setupRealtimeSubscription = async () => {
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.user?.id) {
+        console.error("No user ID found for real-time subscription")
+        return
+      }
+      
+      // Subscribe to changes on agent_applications related to this agent
+      const subscription = supabase
+        .channel('agent-dashboard-changes')
+        .on('postgres_changes', {
+          event: '*', 
+          schema: 'public',
+          table: 'agent_applications',
+          filter: `agent_id=eq.${session.user.id}`
+        }, (payload) => {
+          console.log('Real-time update received:', payload)
+          // Trigger a data refresh when changes are detected
+          refreshData()
+        })
+        .subscribe()
+        
+      // Cleanup subscription when component unmounts
+      return () => {
+        supabase.removeChannel(subscription)
+      }
+    }
+    
+    setupRealtimeSubscription()
+  }, [])
+
+  // Fetch data effect
+  useEffect(() => {
+    const fetchAgentData = async () => {
+      try {
+        setLoading(true)
+        
+        // Get current user
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (!session?.user?.id) {
+          console.error("No user ID found")
+          setError("Session not found. Please log in again.")
+          setLoading(false)
+          return
+        }
+        
+        console.log("Agent dashboard: Fetching applications for current agent")
+        
+        // Fetch agent applications using get_agent_applications RPC
+        const { data: appData, error: appError } = await supabase
+          .rpc('get_agent_applications', { p_agent_id: session.user.id })
+          
+        if (appError) {
+          console.error("Error using get_agent_applications function:", appError)
+          
+          // Fallback to direct query
+          console.log("Falling back to direct query for agent applications")
+          
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('agent_applications')
+            .select('*')
+            .eq('agent_id', session.user.id)
+            
+          if (fallbackError) {
+            console.error("Error in fallback query:", fallbackError)
+            throw new Error(fallbackError.message)
+          }
+          
+          if (fallbackData) {
+            console.log(`Fetched ${fallbackData.length} applications via fallback query`)
+            setApplications(fallbackData)
+            processApplicationData(fallbackData)
+          }
+        } else if (appData) {
+          console.log(`Successfully fetched ${appData.length} applications via RPC`)
+          setApplications(appData)
+          processApplicationData(appData)
+        } else {
+          console.log("No applications found for this agent")
+          setApplications([])
+          processApplicationData([])
+        }
+        
+        // Fetch recent activities
+        await fetchRecentActivities(session.user.id)
+        
+        setLoading(false)
+      } catch (error) {
+        console.error("Error fetching agent dashboard data:", error)
+        setError("Failed to load dashboard data. Please try again.")
+        setLoading(false)
+      }
+    }
+    
+    // Process application data to calculate statistics
+    const processApplicationData = (apps: any[]) => {
+      if (!apps || apps.length === 0) {
+        // Set default values if no applications
+        setStats({
+          ...stats,
+          total_applications: 0,
+          total_commission: 0,
+          annual_premium: 0,
+          monthly_premium: 0,
+          pending_applications: 0,
+          approved_applications: 0,
+          declined_applications: 0,
+          approval_rate: 0,
+          avg_time_to_decision: 0,
+          last_updated: formatCurrentDate(),
+          term_count: 0,
+          whole_count: 0,
+          universal_count: 0,
+          final_expense_count: 0
+        })
+        return
+      }
+      
+      // Filter applications by time period
+      const dateRange = getDateRange(timePeriod)
+      const filteredApps = apps.filter(app => {
+        const appDate = new Date(app.created_at || app.updated_at)
+        return appDate >= dateRange.start && 
+               (dateRange.end ? appDate <= dateRange.end : true) // Handle end date if present
+      })
+      
+      console.log(`Filtered to ${filteredApps.length} applications within ${getTimePeriodDisplayName(timePeriod)} period`)
+      
+      // Calculate statistics
+      const total = filteredApps.length
+      
+      const pending = filteredApps.filter(app => 
+        app.status?.toLowerCase().includes('pending')
+      ).length
+      
+      const approved = filteredApps.filter(app => 
+        app.status?.toLowerCase().includes('approved') || 
+        app.status?.toLowerCase().includes('issued') ||
+        app.status?.toLowerCase().includes('live')
+      ).length
+      
+      const declined = filteredApps.filter(app => 
+        app.status?.toLowerCase().includes('declined') || 
+        app.status?.toLowerCase().includes('cancelled')
+      ).length
+      
+      // Calculate total commission and premium
+      const totalCommission = filteredApps.reduce((sum, app) => 
+        sum + (parseFloat(app.commission_amount) || 0), 0)
+        
+      const annualPremium = filteredApps.reduce((sum, app) => 
+        sum + (parseFloat(app.annual_premium) || parseFloat(app.monthly_premium) * 12 || 0), 0)
+        
+      const monthlyPremium = filteredApps.reduce((sum, app) => 
+        sum + (parseFloat(app.monthly_premium) || parseFloat(app.annual_premium) / 12 || 0), 0)
+      
+      // Calculate approval rate and average time to decision
+      const approvalRate = total > 0 ? (approved / total) * 100 : 0
+      
+      const appsWithDecisionTime = filteredApps.filter(app => 
+        app.created_at && app.status_updated_at && 
+        !app.status?.toLowerCase().includes('pending')
+      )
+      
+      let avgTimeToDecision = 0
+      if (appsWithDecisionTime.length > 0) {
+        const totalDays = appsWithDecisionTime.reduce((sum, app) => {
+          const created = new Date(app.created_at)
+          const updated = new Date(app.status_updated_at)
+          const diffTime = Math.abs(updated.getTime() - created.getTime())
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+          return sum + diffDays
+        }, 0)
+        avgTimeToDecision = totalDays / appsWithDecisionTime.length
+      }
+      
+      // Calculate product type counts
+      const termCount = filteredApps.filter(app => 
+        app.product?.toLowerCase().includes('term') || 
+        app.product_type?.toLowerCase().includes('term')
+      ).length
+      
+      const wholeCount = filteredApps.filter(app => 
+        app.product?.toLowerCase().includes('whole') || 
+        app.product_type?.toLowerCase().includes('whole')
+      ).length
+      
+      const universalCount = filteredApps.filter(app => 
+        app.product?.toLowerCase().includes('universal') || 
+        app.product_type?.toLowerCase().includes('universal')
+      ).length
+      
+      const finalExpenseCount = filteredApps.filter(app => 
+        app.product?.toLowerCase().includes('final expense') || 
+        app.product_type?.toLowerCase().includes('final expense')
+      ).length
+      
+      // Update state with calculated values
+      setStats({
+        total_applications: total,
+        total_commission: totalCommission,
+        annual_premium: annualPremium,
+        monthly_premium: monthlyPremium,
+        pending_applications: pending,
+        approved_applications: approved,
+        declined_applications: declined,
+        approval_rate: approvalRate,
+        avg_time_to_decision: avgTimeToDecision,
+        last_updated: formatCurrentDate(),
+        term_count: termCount,
+        whole_count: wholeCount,
+        universal_count: universalCount,
+        final_expense_count: finalExpenseCount
+      })
+    }
+    
+    // Fetch recent activities function
+    const fetchRecentActivities = async (agentId: string) => {
+      try {
+        setActivityLoading(true)
+        
+        // Get agent's recent activities
+        const { data: activities, error: activitiesError } = await supabase
+          .from('activities')
+          .select('*')
+          .eq('user_id', agentId)
+          .order('created_at', { ascending: false })
+          .limit(10)
+          
+        if (activitiesError) {
+          console.error("Error fetching activities:", activitiesError)
+          throw new Error(activitiesError.message)
+        }
+        
+        if (activities) {
+          setRecentActivities(activities)
+        }
+        
+        setActivityLoading(false)
+      } catch (error) {
+        console.error("Error fetching activities:", error)
+        setActivityLoading(false)
+      }
+    }
+    
+    // Fetch data on initial load and when refresh is triggered
+    fetchAgentData()
+    
+    // Set up interval to refresh data every 60 seconds
+    const refreshInterval = setInterval(() => {
+      refreshData()
+    }, 60000)
+    
+    return () => clearInterval(refreshInterval)
+  }, [timePeriod, refreshTrigger]) // Re-run when time period changes or refresh is triggered
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -508,11 +864,55 @@ export default function AgentDashboard() {
 
   return (
     <div className="px-2 md:px-4 py-8">
-        <div className="mb-8">
+        <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
           Welcome back, {userName === 'Admin User' ? 'Agent' : userName}!
         </h1>
         <p className="text-gray-600 mt-1">Here's what's happening with your applications</p>
+      </div>
+      
+      {/* Time Period Filter */}
+      <div className="flex items-center mb-6 gap-3">
+        <div className="font-semibold text-gray-700 flex items-center gap-2">
+          <Filter size={18} />
+          Time Period:
+        </div>
+        <div className="relative">
+          <button 
+            className="px-3 py-1.5 bg-white text-gray-800 rounded-md border border-gray-300 flex items-center gap-2 hover:bg-gray-50"
+            onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+          >
+            {getTimePeriodDisplayName(timePeriod)}
+            <ChevronDown size={16} />
+          </button>
+          
+          {showFilterDropdown && (
+            <div className="absolute top-full mt-1 left-0 bg-white shadow-lg rounded-md border border-gray-200 z-10 w-48">
+              {['month-to-date', 'last-month', 'quarter-to-date', 'six-months-to-date', 'year-to-date', 'custom'].map((period) => (
+                <button
+                  key={period}
+                  className="px-4 py-2 text-left hover:bg-gray-100 w-full text-sm"
+                  onClick={() => {
+                    setTimePeriod(period)
+                    setShowFilterDropdown(false)
+                    // Refresh data with new time period
+                    refreshData()
+                  }}
+                >
+                  {getTimePeriodDisplayName(period)}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        <button 
+          onClick={refreshData} 
+          className="ml-2 flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          <RefreshCw size={14} />
+          Refresh
+        </button>
       </div>
       
       {/* Stats Cards */}
@@ -522,7 +922,7 @@ export default function AgentDashboard() {
             <FileText className="h-6 w-6 text-blue-600" />
           </div>
           <div>
-            <p className="text-gray-500 text-sm">Total Applications</p>
+            <p className="text-gray-500 text-sm">Total Submitted AP</p>
             <p className="text-2xl font-bold">{statistics.total}</p>
           </div>
         </div>

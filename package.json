@@ -3,19 +3,13 @@
   "version": "1.0.0",
   "description": "Insurance platform for agents, managers and administrators",
   "private": true,
-  "engines": {
-    "node": ">=18.x"
-  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:vercel": "NODE_OPTIONS='--max_old_space_size=4096' NEXT_TELEMETRY_DISABLED=1 next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy:minimal": "node scripts/minimal-deployment.js && next build",
-    "deploy:static": "next build && next export -o out",
-    "vercel-build": "npm run build:vercel",
-    "vercel-deploy": "vercel --prod"
+    "prod": "cross-env NODE_ENV=production next build && cross-env NODE_ENV=production next start",
+    "prod:standalone": "cross-env NODE_ENV=production next build && node .next/standalone/server.js"
   },
   "keywords": [],
   "author": "",
@@ -56,11 +50,14 @@
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "autoprefixer": "^10.4.16",
-    "crypto-browserify": "^3.12.1",
+    "cross-env": "^7.0.3",
     "eslint": "^8.53.0",
     "eslint-config-next": "13.4.19",
     "fs-extra": "^11.3.0",
     "postcss": "^8.4.31",
     "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=18.x"
   }
 }

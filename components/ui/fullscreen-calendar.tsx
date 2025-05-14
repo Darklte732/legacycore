@@ -10,19 +10,19 @@ interface CalendarEvent {
   color?: string;
 }
 
-interface FullscreenCalendarProps {
+interface FullScreenCalendarProps {
   events: CalendarEvent[];
   onEventClick?: (event: CalendarEvent) => void;
   onDateClick?: (date: Date) => void;
   className?: string;
 }
 
-export function FullscreenCalendar({
+export function FullScreenCalendar({
   events = [],
   onEventClick,
   onDateClick,
   className,
-}: FullscreenCalendarProps) {
+}: FullScreenCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState<'month' | 'week' | 'day'>('month');
 
@@ -236,4 +236,4 @@ export function FullscreenCalendar({
   );
 }
 
-export default FullscreenCalendar; 
+export default FullScreenCalendar; 

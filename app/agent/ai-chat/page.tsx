@@ -7,8 +7,8 @@ import { v4 as uuidv4 } from 'uuid';
 import './components/ChatInterface.css';
 import { Sidebar } from "./components/sidebar";
 import DailyInspiration from "./components/DailyInspiration";
-import { useUserSession } from '@/hooks/useUserSession';
-import { chatService } from '@/lib/chatService';
+import useUserSession from '@/hooks/useUserSession';
+import chatService from '@/lib/chatService';
 import { Message } from './components/message'
 import { formatResponse } from './utils/formatResponse';
 

@@ -1,7 +1,7 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "buildCommand": "cd legacy-core && npm run build",
+  "buildCommand": "cd legacy-core && npm install && npm run build",
   "devCommand": "npm run dev",
   "installCommand": "cd legacy-core && npm install",
   "outputDirectory": "legacy-core/.next",

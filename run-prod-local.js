@@ -1,49 +1,66 @@
-#!/usr/bin/env node
-
-const fs = require('fs-extra');
-const path = require('path');
 const { spawn } = require('child_process');
-const dotenv = require('dotenv');
+const path = require('path');
+const fs = require('fs');
 
-// Load environment variables
-dotenv.config({ path: '.env.local' });
-dotenv.config({ path: '.env' });
+console.log('🚀 Starting LegacyCore production build and server...');
 
-// Detect platform (Windows or non-Windows)
-const isWindows = process.platform === 'win32';
-const npxCmd = isWindows ? 'npx.cmd' : 'npx';
+// Helper function to handle spawned processes
+function spawnProcess(command, args, options = {}) {
+  return new Promise((resolve, reject) => {
+    console.log(`\n🔧 Running: ${command} ${args.join(' ')}`);
+    
+    const childProcess = spawn(command, args, {
+      stdio: 'inherit',
+      shell: true,
+      ...options
+    });
 
-// Ensure production mode
-process.env.NODE_ENV = 'production';
-process.env.NEXT_TELEMETRY_DISABLED = '1';
+    childProcess.on('close', code => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Process exited with code ${code}`));
+      }
+    });
 
-console.log('🚀 Starting LegacyCore in production mode');
+    childProcess.on('error', err => {
+      reject(err);
+    });
+  });
+}
 
-// Run the next start command
-const server = spawn(npxCmd, ['next', 'start'], {
-  stdio: 'inherit',
-  env: {
-    ...process.env,
-    NODE_OPTIONS: '--max_old_space_size=4096'
-  }
-});
+// Ensure standalone directory exists
+const nextStandalonePath = path.join(__dirname, '.next/standalone');
+if (!fs.existsSync(nextStandalonePath)) {
+  console.log('Creating .next/standalone directory...');
+  fs.mkdirSync(nextStandalonePath, { recursive: true });
+}
 
-console.log('💻 Server running at http://localhost:3000');
-
-// Handle server termination
-server.on('close', (code) => {
-  console.log(`Server exited with code ${code}`);
-});
-
-// Handle process termination
-process.on('SIGINT', () => {
-  console.log('🛑 Received SIGINT, shutting down server...');
-  server.kill();
-  process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-  console.log('🛑 Received SIGTERM, shutting down server...');
-  server.kill();
-  process.exit(0);
-}); 
+// First step: Build the application
+console.log('📦 Step 1: Building application...');
+spawnProcess('npm', ['run', 'build'])
+  .then(() => {
+    console.log('\n✅ Build completed successfully!');
+    console.log('📝 Verifying build outputs...');
+    
+    // Check if the standalone directory exists after build
+    const hasStandalone = fs.existsSync(nextStandalonePath);
+    
+    if (hasStandalone) {
+      console.log('✅ Standalone build detected.');
+      
+      // Start the server from the standalone build
+      console.log('\n🚀 Step 2: Starting production server from standalone build...');
+      return spawnProcess('node', ['.next/standalone/server.js']);
+    } else {
+      console.log('⚠️ No standalone build detected, starting with Next.js start...');
+      
+      // Fallback to regular Next.js start
+      console.log('\n🚀 Step 2: Starting production server with next start...');
+      return spawnProcess('npm', ['run', 'start']);
+    }
+  })
+  .catch(error => {
+    console.error('\n❌ Error:', error.message || 'Unknown error occurred');
+  process.exit(1);
+  }); 

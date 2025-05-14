@@ -1,0 +1,9 @@
+@echo off
+echo Starting Next.js directly...
+set NEXT_PUBLIC_SUPABASE_URL=https://iufyuzmigirugcufrtvt.supabase.co
+set NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Znl1em1pZ2lydWdjdWZydHZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUwMzQxMjcsImV4cCI6MjA2MDYxMDEyN30.V38OGEX1Oy3gFfu5ClGWRk3xYAhb_DVr-5ojOQZ1UfU
+set SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1Znl1em1pZ2lydWdjdWZydHZ0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NTAzNDEyNywiZXhwIjoyMDYwNjEwMTI3fQ._E7Km6hxAfhDPN_bXVeeVmck6EoGwjoT9QEE7r0vIJQ
+set N8N_WEBHOOK_URL=https://n8n-mybh5-u38603.vm.elestio.app/webhook/Chat
+
+echo Bypassing npm to run Next.js directly...
+node node_modules\next\dist\bin\next dev 

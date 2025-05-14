@@ -1,9 +1,9 @@
 'use client'
 
-import { FC, useState } from 'react'
+import { FC, useState, useEffect } from 'react'
 import Image from 'next/image'
-import { useUserSession } from '@/hooks/useUserSession'
-import { PlusCircle, Search, Trash2, Check, X } from 'lucide-react'
+import useUserSession from '@/hooks/useUserSession'
+import { PlusCircle, Search, Trash2, Edit, Check, X } from 'lucide-react'
 
 // Interface for the sidebar component
 type SidebarProps = {

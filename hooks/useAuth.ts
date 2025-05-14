@@ -10,6 +10,7 @@ type UseAuthReturn = {
   session: Session | null;
   loading: boolean;
   signIn: (options: { email: string; password: string }) => Promise<any>;
+  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<any>;
   signOut: () => Promise<any>;
   resetPassword: (email: string) => Promise<any>;
 };
@@ -20,13 +21,17 @@ const staticAuthValue: UseAuthReturn = {
   session: null,
   loading: false,
   signIn: async () => ({ data: null, error: null }),
+  signUp: async () => ({ success: false, message: '', error: null }),
   signOut: async () => ({ error: null }),
   resetPassword: async () => ({ error: null }),
 };
 
+// Determine if we're running in a server context
+const isServer = typeof window === 'undefined';
+
 export function useAuth(): UseAuthReturn {
-  // Using typeof window check inside the component to avoid issues during Vercel build
-  if (typeof window === 'undefined') {
+  // If running in a server context during build, return a static value
+  if (isServer) {
     return staticAuthValue;
   }
 
@@ -71,6 +76,59 @@ export function useAuth(): UseAuthReturn {
     }
   };
 
+  const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
+    try {
+      // Create the user account
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+          }
+        }
+      });
+
+      if (error) {
+        return { success: false, message: '', error };
+      }
+
+      // Create the user profile
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            email: email,
+            first_name: firstName,
+            last_name: lastName,
+            role: 'agent', // Default role
+            created_at: new Date().toISOString(),
+          });
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+          return {
+            success: true,
+            message: 'Account created but profile setup had an issue. Please contact support.',
+            error: profileError
+          };
+        }
+      }
+
+      return {
+        success: true,
+        message: 'Please check your email for a confirmation link to complete your registration.',
+        error: null
+      };
+    } catch (error) {
+      console.error('Error during signup:', error);
+      return { success: false, message: '', error };
+    }
+  };
+
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -96,6 +154,7 @@ export function useAuth(): UseAuthReturn {
     session,
     loading,
     signIn,
+    signUp,
     signOut,
     resetPassword,
   };
