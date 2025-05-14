@@ -1,13 +1,13 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "buildCommand": "npm run build:vercel",
+  "buildCommand": "cd legacy-core && npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "npm install",
+  "installCommand": "cd legacy-core && npm install",
+  "outputDirectory": "legacy-core/.next",
   "github": {
     "silent": true,
-    "autoAlias": true,
-    "enabled": true
+    "autoAlias": true
   },
   "headers": [
     {
@@ -28,16 +28,11 @@
       ]
     }
   ],
+  "regions": ["iad1"],
   "env": {
-    "NODE_OPTIONS": "--max_old_space_size=4096",
-    "NEXT_TELEMETRY_DISABLED": "1"
-  },
-  "build": {
-    "env": {
-      "CI": "false",
-      "NEXT_TELEMETRY_DISABLED": "1",
-      "NODE_ENV": "production"
-    }
-  },
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./.next ./app ./components ./lib ./pages"
+    "NEXT_PUBLIC_SUPABASE_URL": "${NEXT_PUBLIC_SUPABASE_URL}",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "${NEXT_PUBLIC_SUPABASE_ANON_KEY}",
+    "SUPABASE_SERVICE_ROLE_KEY": "${SUPABASE_SERVICE_ROLE_KEY}",
+    "NODE_ENV": "production"
+  }
 }
