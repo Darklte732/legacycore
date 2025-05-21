@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { AgentApplication, PaymentStatus } from '@/types/application'
 import { createClient } from '@/lib/supabase/client'
 import { getPaymentIndicatorClass, getPaymentIndicatorTitle } from '../utils/statusUtils'
@@ -55,15 +55,18 @@ export const PaymentIndicator = ({
   const getIndicatorClasses = () => {
     const baseClass = getPaymentIndicatorClass(status);
     const firstMonthClass = monthNumber === 1 ? 'first-month ' : '';
-    const size = monthNumber === 1 ? 'w-4 h-4' : 'w-3 h-3';
+    // Make all indicators consistently small
+    const size = 'w-3 h-3';
     return `payment-indicator ${baseClass} ${firstMonthClass} ${size} ${isUpdating ? 'animate-pulse' : ''}`;
   };
   
   const indicatorClass = getIndicatorClasses();
-  // Ensure all indicators have a meaningful tooltip, even empty ones
-  const tooltipTitle = status 
-    ? getPaymentIndicatorTitle(status, monthNumber, paymentDate)
-    : `Month ${monthNumber}: Click to set payment status`;
+  // Ensure all indicators have a meaningful tooltip with payment dates
+  const tooltipTitle = !status 
+    ? `Month ${monthNumber}: Click to set payment status`
+    : paymentDate 
+      ? `Month ${monthNumber}: ${status} (${new Date(paymentDate).toLocaleDateString()})`
+      : `Month ${monthNumber}: ${status}`;
   
   // Check if this is the first payment and it should be marked as paid
   useEffect(() => {
@@ -76,7 +79,7 @@ export const PaymentIndicator = ({
           const supabase = createClient();
           const { data, error } = await supabase
             .from('agent_applications')
-            .select('status, paid_status')
+            .select('status, paid_status, effective_policy_date')
             .eq('id', applicationId)
             .single();
             
@@ -84,7 +87,10 @@ export const PaymentIndicator = ({
           
           // Only proceed if component is still mounted and effect is still active
           if (isMounted.current && isActive) {
-            if (data && (data.status?.includes('Paid') || data.paid_status === 'Paid')) {
+            // MUCH stricter check - only mark as paid if explicitly paid_status='Paid'
+            if (data && 
+                data.paid_status === 'Paid' && 
+                data.effective_policy_date !== null) {
               // This should be marked as paid, so update it
               updatePaymentStatus('PAID');
             }
@@ -111,53 +117,83 @@ export const PaymentIndicator = ({
     try {
       const supabase = createClient();
       
-      // Direct database update with fallback options
+      // Use the payment date logic
       const paymentDate = date || 
                           (newStatus === 'PAID' ? new Date() : null);
-                          
-      // First, try the application_payments table
-      const { error: paymentError } = await supabase
-        .from('application_payments')
-        .upsert({
-          application_id: applicationId,
-          month_number: monthNumber,
-          payment_status: newStatus,
-          payment_date: paymentDate ? paymentDate.toISOString() : null,
-          updated_at: new Date().toISOString()
-        }, { 
-          onConflict: 'application_id,month_number' 
-        });
-        
-      if (paymentError) {
-        console.error('Failed to update payment record:', paymentError);
-      }
       
-      // Also update the legacy month field directly
-      const monthField = `month_${monthNumber}`;
-      const { error: appError } = await supabase
+      // Get current application state first to ensure we're working with the latest data
+      const { data: appData, error: appError } = await supabase
         .from('agent_applications')
-        .update({ [monthField]: newStatus })
-        .eq('id', applicationId);
+        .select('effective_policy_date, status, paid_status, month_1')
+        .eq('id', applicationId)
+        .single();
         
       if (appError) {
-        console.error('Failed to update month field:', appError);
+        console.error('Failed to get application data:', appError);
+        if (isMounted.current) {
+          toast.error('Error retrieving application data');
+        }
+        return;
       }
       
-      // If this is the first month and marking as PAID, update paid_status
-      if (monthNumber === 1 && newStatus === 'PAID') {
-        await supabase
-          .from('agent_applications')
-          .update({ 
-            paid_status: 'Paid',
-            policy_health: 'Active'
-          })
-          .eq('id', applicationId);
+      // Synchronize the paid_status for Month 1 changes
+      let shouldUpdatePaidStatus = false;
+      let newPaidStatus: string | null = null;
+      
+      if (monthNumber === 1) {
+        if (newStatus === 'PAID') {
+          // If first month is being marked as PAID, update paid_status to "Paid"
+          shouldUpdatePaidStatus = true;
+          newPaidStatus = 'Paid';
+        } else if (newStatus === null || newStatus === 'MISSED' || newStatus === 'NSF') {
+          // If first month is being marked as unpaid/missed, update paid_status to "Unpaid"
+          shouldUpdatePaidStatus = true;
+          newPaidStatus = 'Unpaid';
+        }
       }
       
-      if (isMounted.current) {
-        toast.success(`Payment for month ${monthNumber} marked as ${newStatus}`);
-        if (onPaymentUpdated) {
-          onPaymentUpdated();
+      // Use our track_payment RPC function with the synchronization info
+      const { data: trackResult, error: trackError } = await supabase.rpc(
+        'track_payment',
+        { 
+          p_application_id: applicationId,
+          p_month_number: monthNumber,
+          p_payment_status: newStatus,
+          p_payment_date: paymentDate ? paymentDate.toISOString() : null,
+          p_update_paid_status: shouldUpdatePaidStatus,
+          p_new_paid_status: newPaidStatus
+        }
+      );
+      
+      if (trackError) {
+        console.error('Payment tracking failed:', trackError);
+        
+        // Fall back to manual synchronization
+        await manualSyncPaymentStatus(supabase, newStatus, paymentDate, shouldUpdatePaidStatus, newPaidStatus);
+      } else {
+        // Check if the tracking was successful
+        if (trackResult && trackResult.success) {
+          console.log('Payment tracking successful:', trackResult.message);
+          
+          // If we have a next payment scheduled, log it
+          if (trackResult.next_payment) {
+            console.log('Next payment scheduled:', trackResult.next_payment);
+          }
+          
+          if (isMounted.current) {
+            toast.success(trackResult.message || `Payment for month ${monthNumber} marked as ${newStatus || 'cleared'}`);
+            if (onPaymentUpdated) {
+              onPaymentUpdated();
+            }
+          }
+        } else {
+          // RPC succeeded but returned an error message
+          const errorMsg = trackResult?.message || 'Payment update failed';
+          console.error('Payment tracking returned error:', errorMsg);
+          
+          if (isMounted.current) {
+            toast.error(errorMsg);
+          }
         }
       }
     } catch (error) {
@@ -170,6 +206,111 @@ export const PaymentIndicator = ({
         setIsUpdating(false);
         setShowPaymentMenu(false);
       }
+    }
+  };
+  
+  // Manual synchronization when the RPC function fails
+  const manualSyncPaymentStatus = async (
+    supabase: any, 
+    newStatus: PaymentStatus, 
+    paymentDate: Date | null,
+    shouldUpdatePaidStatus: boolean,
+    newPaidStatus: string | null
+  ) => {
+    console.log('Performing manual payment synchronization...');
+    
+    try {
+      // Update both tables for consistency
+      // 1. Update agent_applications table
+      const monthField = `month_${monthNumber}`;
+      let updateFields: any = { [monthField]: newStatus };
+      
+      // If we need to update paid_status as well
+      if (shouldUpdatePaidStatus && newPaidStatus) {
+        updateFields.paid_status = newPaidStatus;
+        
+        // If marking as paid, also update policy health
+        if (newPaidStatus === 'Paid') {
+          updateFields.policy_health = 'Active';
+        } else if (newPaidStatus === 'Unpaid') {
+          updateFields.policy_health = 'Pending First Payment';
+        }
+      }
+      
+      const { error: appError } = await supabase
+        .from('agent_applications')
+        .update(updateFields)
+        .eq('id', applicationId);
+        
+      if (appError) {
+        throw new Error(`Failed to update agent_applications: ${appError.message}`);
+      }
+      
+      // 2. Update application_payments table
+      try {
+        const { error: paymentError } = await supabase
+          .from('application_payments')
+          .upsert({
+            application_id: applicationId,
+            month_number: monthNumber,
+            payment_status: newStatus,
+            payment_date: paymentDate ? paymentDate.toISOString() : null,
+            updated_at: new Date().toISOString()
+          }, { 
+            onConflict: 'application_id,month_number' 
+          });
+          
+        if (paymentError) {
+          console.error('Failed to update application_payments (non-critical):', paymentError);
+        }
+      } catch (paymentErr) {
+        console.error('Error updating application_payments (continuing):', paymentErr);
+      }
+      
+      // 3. If this was a PAID update, schedule the next payment
+      if (newStatus === 'PAID' && monthNumber < 12) {
+        const nextMonth = monthNumber + 1;
+        const nextDate = paymentDate ? new Date(paymentDate) : new Date();
+        nextDate.setDate(nextDate.getDate() + 30); // Add 30 days
+        
+        try {
+          // Update next month in agent_applications
+          await supabase
+            .from('agent_applications')
+            .update({ [`month_${nextMonth}`]: 'PENDING' })
+            .eq('id', applicationId);
+            
+          // Add pending payment for next month
+          await supabase
+            .from('application_payments')
+            .upsert({
+              application_id: applicationId,
+              month_number: nextMonth,
+              payment_status: 'PENDING',
+              payment_date: nextDate.toISOString(),
+              updated_at: new Date().toISOString()
+            }, { 
+              onConflict: 'application_id,month_number' 
+            });
+        } catch (nextError) {
+          console.error('Error scheduling next payment (non-critical):', nextError);
+        }
+      }
+      
+      if (isMounted.current) {
+        toast.success(`Payment for month ${monthNumber} marked as ${newStatus || 'cleared'}`);
+        if (onPaymentUpdated) {
+          onPaymentUpdated();
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Manual sync failed:', error);
+      if (isMounted.current) {
+        toast.error(`Failed to update payment: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+      return false;
     }
   };
 
@@ -312,13 +453,18 @@ export const PaymentGrid = ({
           .order('month_number');
           
         if (error) {
-          throw error;
+          console.error('Error fetching payments:', error);
+          // Don't show error toast for permission issues
+          if (!error.message.includes('permission') && !error.message.includes('must be owner')) {
+            toast.error('Failed to load payment history');
+          }
+          // Continue without data - we'll fallback to application month fields
+        } else {
+          setPayments(data || []);
         }
-        
-        setPayments(data || []);
       } catch (error) {
         console.error('Error fetching payments:', error);
-        toast.error('Failed to load payment history');
+        // Don't show error toast to avoid overwhelming the user
       } finally {
         setLoading(false);
       }
@@ -709,135 +855,227 @@ export const SafePaymentHistoryGrid = ({ applicationId }: { applicationId: strin
 
 // NEW: Payment history grid component for the applications table
 export const PaymentHistoryGrid = ({ applicationId }: { applicationId: string }) => {
-  const [payments, setPayments] = useState<Record<number, PaymentData>>({});
+  const [payments, setPayments] = useState<PaymentData[]>([]);
+  const [application, setApplication] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [shouldShowPayments, setShouldShowPayments] = useState(false);
+  const [nextPaymentDates, setNextPaymentDates] = useState<{[key: number]: string}>({});
   const isMounted = useRef(true);
-  const fetchController = useRef<AbortController | null>(null);
   
   // Use a stable key for rendering indicators
   const stableKey = useRef(`payment-grid-${applicationId}`).current;
   
-  useEffect(() => {
-    // Set isMounted ref to true when component mounts
-    isMounted.current = true;
-    
-    // Create new abort controller for this instance
-    fetchController.current = new AbortController();
-
-    // Only fetch if we have an application ID
-    if (applicationId) {
-      fetchPayments();
-    }
-    
-    // Clean up function that runs when component unmounts
-    return () => {
-      // First abort any pending requests
-      if (fetchController.current) {
-        fetchController.current.abort();
-      }
-      
-      // Then mark component as unmounted to prevent state updates
-      isMounted.current = false;
-      
-      // Clear state
-      setPayments({});
-    };
-  }, [applicationId]);
-  
-  const fetchPayments = async () => {
-    if (!applicationId) return;
+  // Memoize the fetch functions to use in dependencies
+  const fetchApplicationDetails = useCallback(async () => {
+    if (!applicationId || !isMounted.current) return;
     
     try {
-      setLoading(true);
       const supabase = createClient();
-      
-      // Get payments from the dedicated table
-      const { data: paymentData, error: paymentError } = await supabase
-        .from('application_payments')
-        .select('*')
-        .eq('application_id', applicationId)
-        .order('month_number')
-        .abortSignal(fetchController.current?.signal);
-      
-      if (paymentError) {
-        if (paymentError.code === '20') {
-          // This is an abort error, just return silently
-          return;
-        }
+      const { data, error } = await supabase
+        .from('agent_applications')
+        .select('effective_policy_date, status, paid_status, month_1')
+        .eq('id', applicationId)
+        .single();
         
-        console.error('Error fetching payments:', paymentError);
-        if (isMounted.current) {
-          setError('Failed to load payment data');
-        }
+      if (error) {
+        console.error('Error fetching application details:', error);
         return;
       }
       
-      // Only update state if component is still mounted
-      if (isMounted.current) {
-        // Process the data into a record by month
-        const paymentsByMonth: Record<number, PaymentData> = {};
+      if (data && isMounted.current) {
+        // Check if paid_status changed and needs to be reflected in UI
+        const paidStatusChanged = application?.paid_status !== data.paid_status;
         
-        if (paymentData && paymentData.length > 0) {
-          paymentData.forEach((payment) => {
-            paymentsByMonth[payment.month_number] = payment;
-          });
+        setApplication(data);
+        
+        // MUCH STRICTER check - Only show payment history for applications explicitly marked as paid
+        const isIssuedAndPaid = 
+          data.paid_status === 'Paid' && 
+          data.effective_policy_date !== null;
+        
+        setShouldShowPayments(isIssuedAndPaid);
+        
+        // If paid_status changed, refresh payment data
+        if (paidStatusChanged) {
+          console.log('Paid status changed, refreshing payment data...');
+          fetchPayments();
         }
-        
-        setPayments(paymentsByMonth);
       }
     } catch (error) {
-      // Check if this is an AbortError
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        // Request was aborted, no need to update state
-        return;
+      console.error('Error in fetchApplicationDetails:', error);
+    }
+  }, [applicationId, application?.paid_status]);
+  
+  const fetchPayments = useCallback(async () => {
+    if (!applicationId || !isMounted.current) return;
+    
+    setLoading(true);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('application_payments')
+        .select('month_number, payment_status, payment_date, updated_at')
+        .eq('application_id', applicationId)
+        .order('month_number');
+        
+      if (error) {
+        // Still log the error but don't show to user
+        console.error('Error fetching payments:', error);
+      } else if (data && isMounted.current) {
+        setPayments(data);
+        
+        // Extract and track next payment dates
+        const paymentDates: {[key: number]: string} = {};
+        data.forEach(payment => {
+          if (payment.payment_date) {
+            paymentDates[payment.month_number] = payment.payment_date;
+          }
+        });
+        setNextPaymentDates(paymentDates);
       }
-      
-      console.error('Error in fetchPayments:', error);
-      if (isMounted.current) {
-        setError('An unexpected error occurred');
-      }
+    } catch (error) {
+      console.error('Error in payment history:', error);
     } finally {
       if (isMounted.current) {
         setLoading(false);
       }
     }
-  };
-
+  }, [applicationId]);
+  
+  useEffect(() => {
+    // Set isMounted ref to true when component mounts
+    isMounted.current = true;
+    
+    // Only fetch if we have an application ID
+    if (applicationId) {
+      fetchApplicationDetails();
+      fetchPayments();
+    }
+    
+    // Clean up function that runs when component unmounts
+    return () => {
+      // Mark component as unmounted to prevent state updates
+      isMounted.current = false;
+    };
+  }, [applicationId, fetchApplicationDetails, fetchPayments]);
+  
+  // Set up a polling mechanism to check for payment status changes
+  useEffect(() => {
+    if (!applicationId || !shouldShowPayments) return;
+    
+    // Poll for changes every 5 seconds to catch updates from other users
+    const pollInterval = setInterval(() => {
+      if (isMounted.current) {
+        fetchApplicationDetails();
+      }
+    }, 5000);
+    
+    return () => {
+      clearInterval(pollInterval);
+    };
+  }, [applicationId, shouldShowPayments, fetchApplicationDetails]);
+  
   const getMonthStatus = (month: number): PaymentStatus | null => {
-    return payments[month]?.payment_status || null;
+    // First check payment record
+    const payment = payments.find(p => p.month_number === month);
+    if (payment?.payment_status) {
+      return payment.payment_status;
+    }
+    
+    // For first month, ONLY show as PAID if it's explicitly set that way
+    if (month === 1 && application) {
+      // Only trust the explicit month_1 field or payments table records
+      // Do not automatically assume paid based on status
+      if (application.month_1 === 'PAID') {
+        return 'PAID';
+      }
+    }
+    
+    return null;
   };
   
   const getPaymentDate = (month: number): string | null => {
-    return payments[month]?.payment_date || null;
+    // First check from payments data
+    const payment = payments.find(p => p.month_number === month);
+    if (payment?.payment_date) {
+      return payment.payment_date;
+    }
+    
+    // For first month with effective policy date
+    if (month === 1 && application?.effective_policy_date && getMonthStatus(1) === 'PAID') {
+      return application.effective_policy_date;
+    }
+    
+    // Check if this is a consecutive month that should be scheduled
+    if (month > 1 && nextPaymentDates[month]) {
+      return nextPaymentDates[month];
+    }
+    
+    return null;
   };
   
-  const handlePaymentUpdated = () => {
+  const getTooltipText = (month: number): string => {
+    const status = getMonthStatus(month);
+    const date = getPaymentDate(month);
+    
+    if (!status) {
+      return `Month ${month}: Not yet due`;
+    }
+    
+    if (date) {
+      const formattedDate = new Date(date).toLocaleDateString();
+      return `Month ${month}: ${status} (${formattedDate})`;
+    }
+    
+    return `Month ${month}: ${status}`;
+  };
+  
+  const handlePaymentUpdated = useCallback(() => {
     if (isMounted.current) {
       fetchPayments();
+      fetchApplicationDetails();
     }
-  };
+  }, [fetchPayments, fetchApplicationDetails]);
   
   // Create indicators for months 1-12 with careful key management
   const renderPaymentIndicators = () => {
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
     
-    return months.map((month) => (
-      <PaymentIndicator
-        key={`${stableKey}-month-${month}`}
-        status={getMonthStatus(month)}
-        monthNumber={month}
-        applicationId={applicationId}
-        paymentDate={getPaymentDate(month)}
-        onPaymentUpdated={handlePaymentUpdated}
-      />
-    ));
+    return (
+      <div className="flex gap-1 items-center">
+        {months.map((month) => (
+          <PaymentIndicator
+            key={`${stableKey}-month-${month}`}
+            status={getMonthStatus(month)}
+            monthNumber={month}
+            applicationId={applicationId}
+            paymentDate={getPaymentDate(month)}
+            onPaymentUpdated={handlePaymentUpdated}
+          />
+        ))}
+      </div>
+    );
   };
   
+  // Show nothing if the application isn't issued and paid
+  if (!shouldShowPayments) {
+    if (application?.effective_policy_date && application?.paid_status !== 'Paid') {
+      // Show a placeholder with explanation for applications with effective date but not paid
+      return (
+        <div className="payment-history-container flex items-center">
+          <div className="text-xs text-gray-500">Payment tracking begins after first payment</div>
+        </div>
+      );
+    }
+    // Otherwise show nothing
+    return null;
+  }
+  
   // Create a simpler display if loading is taking too long
-  if (loading && !Object.keys(payments).length) {
+  if (loading && payments.length === 0) {
     return (
-      <div className="payment-history-container flex items-center justify-center">
+      <div className="payment-history-container flex items-center">
         <div className="text-xs text-gray-500">Loading...</div>
       </div>
     );

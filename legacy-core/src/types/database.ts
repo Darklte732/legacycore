@@ -105,6 +105,24 @@ export interface Database {
           proposed_insured: string
           client_phone_number: string | null
           client_state: string | null
+          city: string | null
+          zip: string | null
+          gender: string | null
+          date_of_birth: string | null
+          primary_beneficiary: string | null
+          relationship_to_insured: string | null
+          tobacco_nicotine_use: boolean | null
+          height_feet: number | null
+          height_inches: number | null
+          weight_lbs: number | null
+          medical_lung_disease: boolean | null
+          medical_heart_attack: boolean | null
+          medical_heart_failure: boolean | null
+          medical_blood_clots: boolean | null
+          medical_cancer: boolean | null
+          medical_diabetes: boolean | null
+          medical_high_bp: boolean | null
+          medical_high_cholesterol: boolean | null
           policy_number: string | null
           carrier_id: string | null
           product: string | null
@@ -145,6 +163,24 @@ export interface Database {
           proposed_insured: string
           client_phone_number?: string | null
           client_state?: string | null
+          city?: string | null
+          zip?: string | null
+          gender?: string | null
+          date_of_birth?: string | null
+          primary_beneficiary?: string | null
+          relationship_to_insured?: string | null
+          tobacco_nicotine_use?: boolean | null
+          height_feet?: number | null
+          height_inches?: number | null
+          weight_lbs?: number | null
+          medical_lung_disease?: boolean | null
+          medical_heart_attack?: boolean | null
+          medical_heart_failure?: boolean | null
+          medical_blood_clots?: boolean | null
+          medical_cancer?: boolean | null
+          medical_diabetes?: boolean | null
+          medical_high_bp?: boolean | null
+          medical_high_cholesterol?: boolean | null
           policy_number?: string | null
           carrier_id?: string | null
           product?: string | null
@@ -185,6 +221,24 @@ export interface Database {
           proposed_insured?: string
           client_phone_number?: string | null
           client_state?: string | null
+          city?: string | null
+          zip?: string | null
+          gender?: string | null
+          date_of_birth?: string | null
+          primary_beneficiary?: string | null
+          relationship_to_insured?: string | null
+          tobacco_nicotine_use?: boolean | null
+          height_feet?: number | null
+          height_inches?: number | null
+          weight_lbs?: number | null
+          medical_lung_disease?: boolean | null
+          medical_heart_attack?: boolean | null
+          medical_heart_failure?: boolean | null
+          medical_blood_clots?: boolean | null
+          medical_cancer?: boolean | null
+          medical_diabetes?: boolean | null
+          medical_high_bp?: boolean | null
+          medical_high_cholesterol?: boolean | null
           policy_number?: string | null
           carrier_id?: string | null
           product?: string | null

@@ -157,11 +157,27 @@ export default function ScriptAssistantPage() {
       'firstName', 
       'lastName', 
       'phoneNumber', 
+      'street',
       'state', 
+      'city',
+      'zip',
+      'gender',
+      'dateOfBirth',
+      'beneficiaryName',
+      'beneficiaryRelationship',
+      'tobaccoUse',
+      'heightFeet',
+      'heightInches',
+      'weight',
+      'coverageAmount',
       'agency', // carrier
       'coverageType', // product type
       'monthlyPremium',
-      'product' // specific product
+      'product', // specific product
+      'policyNumber',
+      'effectivePolicyDate',
+      'policySubmitDate',
+      'paidStatus'
     ]
     
     const newErrors: Record<string, boolean> = {}
@@ -173,6 +189,28 @@ export default function ScriptAssistantPage() {
         hasErrors = true
       }
     })
+    
+    // Validate medical conditions are answered
+    const medicalFieldsRequired = [
+      'lungDisease',
+      'heartAttack',
+      'chf',
+      'bloodClots',
+      'cancer',
+      'diabetes',
+      'highBP',
+      'highCholesterol'
+    ]
+    
+    // Make sure at least one medical condition checkbox has been checked (either Yes or No)
+    let atLeastOneMedicalConditionAnswered = medicalFieldsRequired.some(field => 
+      typeof formData.medicalConditions[field as keyof typeof formData.medicalConditions] === 'boolean'
+    );
+    
+    if (!atLeastOneMedicalConditionAnswered) {
+      newErrors['medicalConditions'] = true;
+      hasErrors = true;
+    }
     
     if (hasErrors) {
       setErrors(newErrors)
@@ -202,8 +240,12 @@ export default function ScriptAssistantPage() {
         client_phone_number: formData.phoneNumber,
         client_state: formData.state,
         client_email: formData.email,
+        street_address: formData.street,
         client_address: `${formData.street}, ${formData.city}, ${formData.state} ${formData.zip}`.trim(),
         date_of_birth: formData.dateOfBirth,
+        city: formData.city,
+        zip: formData.zip,
+        gender: formData.gender,
         ssn: formData.ssn,
         
         // Policy Info
@@ -224,16 +266,30 @@ export default function ScriptAssistantPage() {
         funeral_type: formData.funeralType,
         funeral_planner: formData.funeralPlanner,
         beneficiary_name: formData.beneficiaryName,
+        primary_beneficiary: formData.beneficiaryName,
         beneficiary_relationship: formData.beneficiaryRelationship,
+        relationship_to_insured: formData.beneficiaryRelationship,
         contingent_beneficiary: formData.contingentBeneficiary,
         
         // Health Info
         tobacco_use: formData.tobaccoUse,
+        tobacco_nicotine_use: formData.tobaccoUse,
         tobacco_type: formData.tobaccoType,
         tobacco_frequency: formData.tobaccoFrequency,
         height: `${formData.heightFeet}'${formData.heightInches}"`,
+        height_feet: parseInt(formData.heightFeet) || null,
+        height_inches: parseInt(formData.heightInches) || null,
         weight: formData.weight,
+        weight_lbs: parseInt(formData.weight) || null,
         medical_conditions: JSON.stringify(formData.medicalConditions),
+        medical_lung_disease: formData.medicalConditions.lungDisease,
+        medical_heart_attack: formData.medicalConditions.heartAttack,
+        medical_heart_failure: formData.medicalConditions.chf,
+        medical_blood_clots: formData.medicalConditions.bloodClots,
+        medical_cancer: formData.medicalConditions.cancer,
+        medical_diabetes: formData.medicalConditions.diabetes,
+        medical_high_bp: formData.medicalConditions.highBP,
+        medical_high_cholesterol: formData.medicalConditions.highCholesterol,
         medications: formData.medications,
         
         // Policy Selection
@@ -262,6 +318,7 @@ export default function ScriptAssistantPage() {
         // System fields
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        created_by_manager: true, // Add flag to indicate this was created by a manager
       }
       
       console.log('Application ready for database:', applicationData)
@@ -542,12 +599,15 @@ export default function ScriptAssistantPage() {
                 <h3 className="text-lg font-semibold text-blue-800 border-b border-blue-200 pb-2 mb-4">ADDRESS</h3>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="street" className="font-medium">Street</Label>
+                    <Label htmlFor="street" className="font-medium">
+                      Street Address <span className="text-red-500">*</span>
+                    </Label>
                     <Input 
                       id="street" 
                       value={formData.street}
                       onChange={(e) => handleChange('street', e.target.value)}
-                      className={styles.input}
+                      className={`bg-white ${errors.street ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                      data-error={errors.street || undefined}
                     />
                   </div>
                   <div className="grid grid-cols-3 gap-4">

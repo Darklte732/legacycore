@@ -14,6 +14,12 @@ export interface AgentApplication {
   proposed_insured: string
   client_phone_number?: string
   client_state?: string
+  city?: string
+  zip?: string
+  gender?: string
+  date_of_birth?: string
+  primary_beneficiary?: string
+  relationship_to_insured?: string
   policy_number?: string
   carrier?: string
   carrier_id?: string
@@ -50,6 +56,18 @@ export interface AgentApplication {
   commission_amount?: number
   commission_payment_reference?: string
   rowClassName?: string
+  tobacco_nicotine_use?: boolean
+  height_feet?: number
+  height_inches?: number
+  weight_lbs?: number
+  medical_lung_disease?: boolean
+  medical_heart_attack?: boolean
+  medical_heart_failure?: boolean
+  medical_blood_clots?: boolean
+  medical_cancer?: boolean
+  medical_diabetes?: boolean
+  medical_high_bp?: boolean
+  medical_high_cholesterol?: boolean
 }
 
 export interface ApplicationFormValues {

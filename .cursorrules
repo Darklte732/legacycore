@@ -1,0 +1,36 @@
+# Cursor Rules for Legacy Core
+
+## Project Structure
+- Next.js App Router structure in use
+- Feature organization by user role (admin, agent, manager)
+- Components organized in dedicated directories
+
+## Naming Conventions
+- Route folders follow kebab-case
+- Dynamic routes use [brackets]
+- Component files likely use PascalCase
+
+## Implementation Patterns
+- Role-based interfaces with dedicated sections
+- Supabase used for database and authentication
+- API routes for server operations
+
+## Workflow Patterns
+- Still to be determined
+
+## User Preferences
+- Still to be determined
+
+## Known Challenges
+- Still to be determined
+
+## Key Implementation Areas
+- Authentication flows
+- Role-based access control
+- Application management
+- Carrier integration
+- AI features (chat, script assistant)
+- Analytics and reporting
+
+## Notes
+This file will be updated as we learn more about the project's specific patterns and preferences. 

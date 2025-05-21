@@ -16,6 +16,7 @@ export const RoleBasedLayout: React.FC<RoleBasedLayoutProps> = ({ children }) =>
   const router = useRouter()
   const [showUI, setShowUI] = useState(true)
   const [loadingIndicator, setLoadingIndicator] = useState(true)
+  const [pathBasedSidebar, setPathBasedSidebar] = useState<React.ReactNode | null>(null)
   
   // Debug
   useEffect(() => {
@@ -23,10 +24,27 @@ export const RoleBasedLayout: React.FC<RoleBasedLayoutProps> = ({ children }) =>
     console.log('RoleBasedLayout: Current path =', pathname)
   }, [role, pathname])
   
+  // Immediately determine sidebar based on path to prevent flashing
+  useEffect(() => {
+    if (!pathname) return;
+    
+    // Determine sidebar based on the path, regardless of role
+    if (pathname.startsWith('/agent')) {
+      setPathBasedSidebar(<AgentSidebar />)
+    } else if (pathname.startsWith('/manager')) {
+      setPathBasedSidebar(<ManagerSidebar />)
+    } else if (pathname.startsWith('/admin')) {
+      setPathBasedSidebar(<AdminSidebar />)
+    } else {
+      setPathBasedSidebar(null)
+    }
+  }, [pathname])
+  
   useEffect(() => {
     // Remove loading indicator after 2 seconds to avoid stuck loaders
     const timer = setTimeout(() => {
       setLoadingIndicator(false)
+      setShowUI(true) // Always show UI after timeout, even if role is still loading
       
       // Clean up any stuck loading indicators
       const loadingElements = document.querySelectorAll('.loading-indicator')
@@ -34,22 +52,21 @@ export const RoleBasedLayout: React.FC<RoleBasedLayoutProps> = ({ children }) =>
         console.log('RoleBasedLayout: Found loading indicators that might be stuck, removing them')
         loadingElements.forEach(el => el.remove())
       }
-    }, 2000)
+    }, 1000) // Reduced to 1 second
     
     return () => clearTimeout(timer)
   }, [])
   
+  // Handle showing UI - less aggressive hiding
   useEffect(() => {
-    // Only hide the UI when explicitly needed to prevent flash
-    if (loading) {
-      setShowUI(false)
-    } else {
+    if (!loading && role) {
       setShowUI(true)
     }
-  }, [loading])
+  }, [loading, role])
   
+  // Handle redirections based on role
   useEffect(() => {
-    if (!role || !pathname) return
+    if (!role || !pathname || loading) return
     
     // Determine the current section based on pathname
     const isAdminPath = pathname.startsWith('/admin')
@@ -82,60 +99,8 @@ export const RoleBasedLayout: React.FC<RoleBasedLayoutProps> = ({ children }) =>
     }
     
     // Only redirect if we are confident about the role and path
-    if (role && pathname) {
-      handleRoleRedirection()
-    }
-  }, [role, pathname, router])
-  
-  // Function to determine which sidebar to show based on role and pathname
-  const getSidebarComponent = () => {
-    // If no role or loading, don't show any sidebar
-    if (loading) {
-      console.log('RoleBasedLayout: Still loading, not showing sidebar yet')
-      return null
-    }
-    
-    // KEY CHANGE: On specific paths, show the matching sidebar
-    // This ensures path-specific UIs are correct, even if role is wrong
-    if (pathname) {
-      // On agent paths, show the agent sidebar
-      if (pathname.startsWith('/agent')) {
-        console.log('RoleBasedLayout: On agent path, showing AgentSidebar')
-        return <AgentSidebar />
-      }
-      
-      // On manager paths, show the manager sidebar
-      if (pathname.startsWith('/manager')) {
-        console.log('RoleBasedLayout: On manager path, showing ManagerSidebar')
-        return <ManagerSidebar />
-      }
-      
-      // On admin paths, show the admin sidebar
-      if (pathname.startsWith('/admin')) {
-        console.log('RoleBasedLayout: On admin path, showing AdminSidebar')
-        return <AdminSidebar />
-      }
-    }
-    
-    // Fallback to role-based sidebar if not on a specific path
-    if (role === 'admin') {
-      console.log('RoleBasedLayout: Using role-based AdminSidebar')
-      return <AdminSidebar />
-    }
-    
-    if (role === 'manager') {
-      console.log('RoleBasedLayout: Using role-based ManagerSidebar')
-      return <ManagerSidebar />
-    }
-    
-    if (role === 'agent') {
-      console.log('RoleBasedLayout: Using role-based AgentSidebar')
-      return <AgentSidebar />
-    }
-    
-    console.log('RoleBasedLayout: No matching sidebar for role:', role)
-    return null
-  }
+    handleRoleRedirection()
+  }, [role, pathname, router, loading])
   
   // Clear problematic cookies on component mount
   useEffect(() => {
@@ -155,10 +120,37 @@ export const RoleBasedLayout: React.FC<RoleBasedLayoutProps> = ({ children }) =>
     }
   }, [pathname]);
   
+  // Render the appropriate sidebar based on priority:
+  // 1. Path-based sidebar (highest priority)
+  // 2. Role-based sidebar (fallback)
+  const renderSidebar = () => {
+    // If we've determined a sidebar based on path, use that (highest priority)
+    if (pathBasedSidebar) {
+      return pathBasedSidebar;
+    }
+    
+    // If still loading, show no sidebar
+    if (loading) {
+      console.log('RoleBasedLayout: Still loading, not showing sidebar yet')
+      return null
+    }
+    
+    // Fallback to role-based sidebar
+    if (role === 'admin') {
+      return <AdminSidebar />
+    } else if (role === 'manager') {
+      return <ManagerSidebar />
+    } else if (role === 'agent') {
+      return <AgentSidebar />
+    }
+    
+    console.log('RoleBasedLayout: No matching sidebar for role:', role)
+    return null
+  }
+  
   return (
     <div className="flex flex-row min-h-screen bg-gray-100 w-full overflow-hidden">
-      {/* Always attempt to render the sidebar component */}
-      {getSidebarComponent()}
+      {renderSidebar()}
       
       <div className="flex-1 overflow-hidden min-h-screen h-screen max-h-screen">
         {loadingIndicator && !showUI ? (

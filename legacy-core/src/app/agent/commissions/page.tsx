@@ -29,7 +29,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -38,11 +38,22 @@ import {
 } from "recharts"
 import { 
   Calendar, DollarSign, FileClock, Download, Filter, ChevronDown, Search, 
-  ArrowUpDown, CheckCircle2, XCircle, AlertTriangle, Clock 
+  ArrowUpDown, CheckCircle2, XCircle, AlertTriangle, Clock, Eye, 
+  Archive, FileImage, CreditCard, UserCircle, MoreHorizontal, Info, CircleDollarSign
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger, 
+} from "@/components/ui/dropdown-menu"
 
 interface CommissionRecord {
   id: string
@@ -82,6 +93,13 @@ export default function AgentCommissionsPage() {
     field: 'payment_date', 
     direction: 'desc' 
   })
+  // Add state for policies needing attention
+  const [potentialPendingPremium, setPotentialPendingPremium] = useState<number>(0)
+  
+  // Add pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [paginatedData, setPaginatedData] = useState<CommissionRecord[]>([])
   
   const supabase = createClient()
 
@@ -159,6 +177,39 @@ export default function AgentCommissionsPage() {
       }
       
       console.log(`Found ${applicationsData?.length || 0} applications`);
+      
+      // Calculate potential pending annual premium from applications that need attention
+      let pendingAnnualPremium = 0;
+      if (applicationsData && applicationsData.length > 0) {
+        const needsAttentionApps = applicationsData.filter(app => 
+          app.policy_health === "Needs Attention"
+        );
+        
+        pendingAnnualPremium = needsAttentionApps.reduce((sum, app) => {
+          // Convert monthly premium to annual premium if available
+          if (app.ap && typeof app.ap === 'number') {
+            return sum + app.ap;
+          } else if (app.monthly_premium && typeof app.monthly_premium === 'number') {
+            return sum + (app.monthly_premium * 12);
+          }
+          // Try to parse string values
+          try {
+            if (app.ap) {
+              const annualPremium = parseFloat(app.ap.toString());
+              if (!isNaN(annualPremium)) return sum + annualPremium;
+            } else if (app.monthly_premium) {
+              const monthlyPremium = parseFloat(app.monthly_premium.toString());
+              if (!isNaN(monthlyPremium)) return sum + (monthlyPremium * 12);
+            }
+          } catch (e) {
+            // Ignore parsing errors
+          }
+          return sum;
+        }, 0);
+        
+        console.log(`Calculated potential pending annual premium: $${pendingAnnualPremium.toFixed(2)}`);
+        setPotentialPendingPremium(pendingAnnualPremium);
+      }
       
       // Get dedicated commissions data if available
       const { data: commissionsData, error: commissionsError } = await supabase
@@ -520,6 +571,32 @@ export default function AgentCommissionsPage() {
     });
     
     setFilteredData(filtered);
+    
+    // Reset to first page when filters change
+    setCurrentPage(1);
+  }
+  
+  // Paginate data
+  const paginateData = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const slicedData = filteredData.slice(startIndex, endIndex);
+    setPaginatedData(slicedData);
+  }
+  
+  // Pagination controls
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
+    }
+  }
+  
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+    }
   }
 
   // Toggle sort direction
@@ -554,6 +631,11 @@ export default function AgentCommissionsPage() {
   useEffect(() => {
     applyFilters();
   }, [timeFrame, carrierFilter, statusFilter, searchQuery, sortBy, commissionData]);
+  
+  // Apply pagination whenever filtered data or current page changes
+  useEffect(() => {
+    paginateData();
+  }, [filteredData, currentPage, itemsPerPage]);
 
   // Get unique carriers for the filter dropdown
   const uniqueCarriers = Array.from(
@@ -625,11 +707,25 @@ export default function AgentCommissionsPage() {
           <CardContent className="p-6">
             <div className="flex flex-col space-y-2">
               <div className="text-amber-600 text-sm font-medium">Pending</div>
-              <div className="text-3xl font-bold">${Math.round(stats.pendingCommissions).toLocaleString()}</div>
-              <div className="text-gray-500 text-xs">Awaiting payment</div>
+              <div className="text-3xl font-bold">
+                {potentialPendingPremium > 0 ? (
+                  <div className="flex items-center">
+                    <span className="text-amber-500 mr-1">•</span>
+                    <span>${Math.round(potentialPendingPremium).toLocaleString()}</span>
+                  </div>
+                ) : (
+                  `$${Math.round(stats.pendingCommissions).toLocaleString()}`
+                )}
               </div>
-            </CardContent>
-          </Card>
+              {potentialPendingPremium > 0 && (
+                <div className="text-amber-600 text-xs">Potential pending annual premium</div>
+              )}
+              <div className="text-gray-500 text-xs">
+                Needing attention
+              </div>
+            </div>
+          </CardContent>
+        </Card>
           
         <Card className="bg-gradient-to-br from-red-50 to-rose-50 border-red-200">
           <CardContent className="p-6">
@@ -666,7 +762,7 @@ export default function AgentCommissionsPage() {
                     tick={{ fontSize: 12 }}
                     tickFormatter={(value) => `$${value}`}
                   />
-                  <Tooltip 
+                  <RechartsTooltip 
                     formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Commission Amount']}
                     labelFormatter={(label) => `Month: ${label}`}
                   />
@@ -715,7 +811,7 @@ export default function AgentCommissionsPage() {
                       return `${value}: ${formatCurrency(record.value)}`;
                     }}
                   />
-                  <Tooltip 
+                  <RechartsTooltip 
                     formatter={(value) => [formatCurrency(Number(value)), 'Commission Amount']}
                     itemStyle={{ color: '#374151' }}
                   />
@@ -727,32 +823,35 @@ export default function AgentCommissionsPage() {
         </div>
         
         {/* Commission Records & Filters */}
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
+        <Card className="border-0 shadow-lg rounded-xl overflow-hidden bg-white">
+          <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b py-6">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
               <div>
-                <CardTitle>Commission Records</CardTitle>
+                <CardTitle className="text-slate-800 flex items-center gap-2">
+                  <CircleDollarSign className="h-5 w-5 text-blue-600" />
+                  Commission Records
+                </CardTitle>
                 <CardDescription className="mt-1">
                   {filteredData.length} {filteredData.length === 1 ? 'record' : 'records'} found
                 </CardDescription>
               </div>
               
-              <div className="flex items-center mt-4 sm:mt-0">
+              <div className="flex items-center mt-4 sm:mt-0 gap-2">
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
                   <Input
                     type="text"
                     placeholder="Search records..."
-                    className="pl-9 w-64"
+                    className="pl-9 w-64 rounded-full bg-white border-slate-200 focus-visible:ring-blue-500"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                <Button variant="outline" size="icon" className="ml-2" onClick={() => setSearchQuery('')}>
+                <Button variant="outline" size="icon" className="rounded-full ml-2" onClick={() => setSearchQuery('')}>
                   <XCircle className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" className="ml-2" onClick={() => fetchCommissionData()}>
-                  <FileClock className="mr-2 h-4 w-4" />
+                <Button variant="outline" className="ml-2 rounded-full gap-2" onClick={() => fetchCommissionData()}>
+                  <FileClock className="h-4 w-4" />
                   Refresh
                 </Button>
               </div>
@@ -760,15 +859,15 @@ export default function AgentCommissionsPage() {
           </CardHeader>
           
           {/* Filter Tabs & Dropdowns */}
-          <div className="px-6 pt-6 pb-2 border-b">
+          <div className="px-6 pt-6 pb-2 border-b border-slate-100">
             <div className="flex flex-col md:flex-row gap-4">
               <Tabs defaultValue="all" className="w-full" onValueChange={handleTabChange}>
-                <TabsList className="grid grid-cols-5 mb-4">
-                  <TabsTrigger value="all">All Time</TabsTrigger>
-                  <TabsTrigger value="week">This Week</TabsTrigger>
-                  <TabsTrigger value="month">This Month</TabsTrigger>
-                  <TabsTrigger value="quarter">This Quarter</TabsTrigger>
-                  <TabsTrigger value="year">This Year</TabsTrigger>
+                <TabsList className="grid grid-cols-5 mb-4 bg-slate-100 p-1 rounded-xl">
+                  <TabsTrigger value="all" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600">All Time</TabsTrigger>
+                  <TabsTrigger value="week" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600">This Week</TabsTrigger>
+                  <TabsTrigger value="month" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600">This Month</TabsTrigger>
+                  <TabsTrigger value="quarter" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600">This Quarter</TabsTrigger>
+                  <TabsTrigger value="year" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-blue-600">This Year</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -776,7 +875,7 @@ export default function AgentCommissionsPage() {
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
               <div className="w-full sm:w-48">
                 <Select value={carrierFilter} onValueChange={setCarrierFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-white border-slate-200 rounded-lg">
                     <SelectValue placeholder="All Carriers" />
                   </SelectTrigger>
                   <SelectContent>
@@ -790,7 +889,7 @@ export default function AgentCommissionsPage() {
               
               <div className="w-full sm:w-48">
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-white border-slate-200 rounded-lg">
                     <SelectValue placeholder="All Statuses" />
                   </SelectTrigger>
                   <SelectContent>
@@ -804,7 +903,7 @@ export default function AgentCommissionsPage() {
               </div>
               
               <div className="flex-1 flex justify-end">
-                <Button variant="outline">
+                <Button variant="outline" className="rounded-lg border-slate-200 hover:bg-slate-50 transition-colors">
                   <Download className="mr-2 h-4 w-4" />
                   Export
                 </Button>
@@ -816,83 +915,129 @@ export default function AgentCommissionsPage() {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader>
-                  <TableRow>
+                <TableHeader className="bg-slate-50">
+                  <TableRow className="hover:bg-slate-50/80">
                     <TableHead className="w-[180px]">
-                      <Button variant="ghost" size="sm" className="text-xs font-semibold" onClick={() => toggleSort('payment_date')}>
+                      <Button variant="ghost" size="sm" className="text-xs font-semibold text-slate-700 hover:text-blue-600" onClick={() => toggleSort('payment_date')}>
                         Date
                         <ArrowUpDown className="ml-2 h-3 w-3" />
                       </Button>
                     </TableHead>
                     <TableHead>
-                      <Button variant="ghost" size="sm" className="text-xs font-semibold" onClick={() => toggleSort('client_name')}>
+                      <Button variant="ghost" size="sm" className="text-xs font-semibold text-slate-700 hover:text-blue-600" onClick={() => toggleSort('client_name')}>
                         Client
                         <ArrowUpDown className="ml-2 h-3 w-3" />
                       </Button>
                     </TableHead>
                     <TableHead>
-                      <Button variant="ghost" size="sm" className="text-xs font-semibold" onClick={() => toggleSort('carrier')}>
+                      <Button variant="ghost" size="sm" className="text-xs font-semibold text-slate-700 hover:text-blue-600" onClick={() => toggleSort('carrier')}>
                         Carrier
                         <ArrowUpDown className="ml-2 h-3 w-3" />
                       </Button>
                     </TableHead>
                     <TableHead>
-                      <Button variant="ghost" size="sm" className="text-xs font-semibold" onClick={() => toggleSort('product')}>
+                      <Button variant="ghost" size="sm" className="text-xs font-semibold text-slate-700 hover:text-blue-600" onClick={() => toggleSort('product')}>
                         Product
                         <ArrowUpDown className="ml-2 h-3 w-3" />
                       </Button>
                     </TableHead>
                     <TableHead className="text-right">
-                      <Button variant="ghost" size="sm" className="text-xs font-semibold" onClick={() => toggleSort('premium')}>
+                      <Button variant="ghost" size="sm" className="text-xs font-semibold text-slate-700 hover:text-blue-600" onClick={() => toggleSort('premium')}>
                         Premium
                         <ArrowUpDown className="ml-2 h-3 w-3" />
                       </Button>
                     </TableHead>
                     <TableHead className="text-right">
-                      <Button variant="ghost" size="sm" className="text-xs font-semibold" onClick={() => toggleSort('commission_amount')}>
+                      <Button variant="ghost" size="sm" className="text-xs font-semibold text-slate-700 hover:text-blue-600" onClick={() => toggleSort('commission_amount')}>
                         Commission
                         <ArrowUpDown className="ml-2 h-3 w-3" />
                       </Button>
                     </TableHead>
                     <TableHead>
-                      <Button variant="ghost" size="sm" className="text-xs font-semibold" onClick={() => toggleSort('status')}>
+                      <Button variant="ghost" size="sm" className="text-xs font-semibold text-slate-700 hover:text-blue-600" onClick={() => toggleSort('status')}>
                         Status
                         <ArrowUpDown className="ml-2 h-3 w-3" />
                       </Button>
                     </TableHead>
                     <TableHead>
-                      <Button variant="ghost" size="sm" className="text-xs font-semibold" onClick={() => toggleSort('payout_date')}>
+                      <Button variant="ghost" size="sm" className="text-xs font-semibold text-slate-700 hover:text-blue-600" onClick={() => toggleSort('payout_date')}>
                         Payout Date
                         <ArrowUpDown className="ml-2 h-3 w-3" />
                       </Button>
                     </TableHead>
+                    <TableHead className="w-[50px]">
+                      <span className="sr-only">Actions</span>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredData.length > 0 ? (
-                    filteredData.map(record => (
-                      <TableRow key={record.id} className={record.is_chargeback ? 'bg-red-50' : ''}>
-                        <TableCell className="font-medium">{formatDate(record.payment_date)}</TableCell>
+                  {paginatedData.length > 0 ? (
+                    paginatedData.map((record, index) => (
+                      <TableRow 
+                        key={record.id} 
+                        className={`
+                          ${record.is_chargeback ? 'bg-red-50/60' : 'bg-white'}
+                          transition-colors group hover:bg-slate-50/90
+                          ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}
+                        `}
+                      >
+                        <TableCell className="font-medium text-slate-800">{formatDate(record.payment_date)}</TableCell>
                         <TableCell>
-                          <div className="font-medium">{record.client_name}</div>
-                          <div className="text-xs text-gray-500">#{record.policy_number}</div>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8 bg-blue-100 border border-blue-200">
+                              <AvatarFallback className="text-blue-600 text-xs font-medium">
+                                {record.client_name
+                                  .split(' ')
+                                  .map(name => name[0])
+                                  .join('')
+                                  .substring(0, 2)
+                                  .toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-medium text-slate-800">{record.client_name}</div>
+                              <div className="text-xs text-slate-500">#{record.policy_number}</div>
+                            </div>
+                          </div>
                         </TableCell>
-                        <TableCell>{record.carrier}</TableCell>
-                        <TableCell>{record.product}</TableCell>
-                        <TableCell className="text-right">${record.premium}/mo</TableCell>
+                        <TableCell className="font-medium text-slate-600">{record.carrier}</TableCell>
+                        <TableCell className="text-slate-600">{record.product}</TableCell>
+                        <TableCell className="text-right font-medium text-slate-800">
+                          <span className="text-emerald-600">${record.premium.toFixed(2)}</span>/mo
+                        </TableCell>
                         <TableCell className="text-right font-medium">
-                          ${Math.round(record.commission_amount)}
+                          <span className={record.is_chargeback ? 'text-red-600' : 'text-emerald-600'}>
+                            ${Math.round(record.commission_amount).toLocaleString()}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <CommissionStatusBadge status={record.status} />
                         </TableCell>
-                        <TableCell>{formatDate(record.payout_date)}</TableCell>
+                        <TableCell className="text-slate-600">{formatDate(record.payout_date)}</TableCell>
+                        <TableCell>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <MoreHorizontal className="h-4 w-4 text-slate-600" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>View details</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={8} className="h-24 text-center">
-                        No commission records found matching your filters
+                      <TableCell colSpan={9} className="h-32 text-center">
+                        <div className="flex flex-col items-center justify-center text-slate-500">
+                          <FileImage className="h-12 w-12 mb-2 text-slate-300" />
+                          <p className="text-base">No commission records found matching your filters</p>
+                          <p className="text-sm text-slate-400 mt-1">Try adjusting your search criteria</p>
+                        </div>
                       </TableCell>
                     </TableRow>
                   )}
@@ -900,15 +1045,28 @@ export default function AgentCommissionsPage() {
               </Table>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between items-center border-t py-4 bg-gray-50">
-            <div className="text-sm text-gray-500">
-              Showing {filteredData.length} of {commissionData.length} records
+          <CardFooter className="flex justify-between items-center border-t py-4 bg-slate-50/50">
+            <div className="text-sm text-slate-500 flex items-center">
+              <Info className="h-4 w-4 mr-2 text-slate-400" />
+              {currentPage * itemsPerPage > filteredData.length ? filteredData.length : currentPage * itemsPerPage} of {filteredData.length} records • Page {currentPage} of {totalPages || 1}
             </div>
-            <div className="flex items-center">
-              <Button variant="outline" size="sm" className="text-xs mr-2" disabled>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs font-medium rounded-lg bg-white hover:bg-slate-100 transition-colors" 
+                disabled={currentPage <= 1}
+                onClick={goToPreviousPage}
+              >
                 Previous
               </Button>
-              <Button variant="outline" size="sm" className="text-xs" disabled>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs font-medium rounded-lg bg-white hover:bg-slate-100 transition-colors" 
+                disabled={currentPage >= totalPages}
+                onClick={goToNextPage}
+              >
                 Next
               </Button>
             </div>
@@ -961,14 +1119,44 @@ interface CommissionStatusBadgeProps {
 const CommissionStatusBadge: React.FC<CommissionStatusBadgeProps> = ({ status }) => {
   switch (status) {
     case STATUSES.PAID:
-      return <Badge className="bg-green-100 text-green-800 border border-green-200 hover:bg-green-100">Paid</Badge>;
+      return (
+        <div className="flex items-center">
+          <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full font-medium text-xs hover:bg-emerald-100 transition-colors">
+            <CheckCircle2 className="h-3 w-3 mr-1 inline-block" /> Paid
+          </Badge>
+        </div>
+      );
     case STATUSES.PENDING:
-      return <Badge className="bg-yellow-100 text-yellow-800 border border-yellow-200 hover:bg-yellow-100">Pending</Badge>;
+      return (
+        <div className="flex items-center">
+          <Badge className="bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-full font-medium text-xs hover:bg-amber-100 transition-colors">
+            <Clock className="h-3 w-3 mr-1 inline-block" /> Pending
+          </Badge>
+        </div>
+      );
     case STATUSES.PROCESSING:
-      return <Badge className="bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-100">Processing</Badge>;
+      return (
+        <div className="flex items-center">
+          <Badge className="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full font-medium text-xs hover:bg-blue-100 transition-colors">
+            <CreditCard className="h-3 w-3 mr-1 inline-block" /> Processing
+          </Badge>
+        </div>
+      );
     case STATUSES.CHARGEBACK:
-      return <Badge className="bg-red-100 text-red-800 border border-red-200 hover:bg-red-100">Chargeback</Badge>;
+      return (
+        <div className="flex items-center">
+          <Badge className="bg-red-50 text-red-700 border border-red-200 px-3 py-1 rounded-full font-medium text-xs hover:bg-red-100 transition-colors">
+            <XCircle className="h-3 w-3 mr-1 inline-block" /> Chargeback
+          </Badge>
+        </div>
+      );
     default:
-      return <Badge className="bg-gray-100 text-gray-800 border border-gray-200 hover:bg-gray-100">{status}</Badge>;
+      return (
+        <div className="flex items-center">
+          <Badge className="bg-slate-50 text-slate-700 border border-slate-200 px-3 py-1 rounded-full font-medium text-xs hover:bg-slate-100 transition-colors">
+            {status}
+          </Badge>
+        </div>
+      );
   }
 }; 

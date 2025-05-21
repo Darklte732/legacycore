@@ -1,0 +1,704 @@
+/*!**********************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[3]!./src/app/agent/applications/millennial-styles.css ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************************************/
+/* Millennial-friendly styles for applications table */
+
+/* Ensure these styles have high specificity by using multiple classes/ids */
+.applications-table,
+[class*="applications-table"],
+table[class*="applications"],
+div[class*="applications"] table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  margin-bottom: 1.5rem !important;
+  background-color: #ffffff !important;
+  border: none !important;
+}
+
+/* Header styling */
+.applications-table th,
+[class*="applications-table"] th,
+table[class*="applications"] th,
+div[class*="applications"] table th,
+[class*="TableHead"],
+[class*="table-head"],
+[class*="TableHeader"],
+[class*="table-header"] {
+  background: linear-gradient(45deg, #f8f9ff, #eef2ff) !important;
+  color: #4338ca !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.05em !important;
+  padding: 16px !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  position: relative !important;
+}
+
+/* Row styling */
+.applications-table tr,
+[class*="applications-table"] tr,
+table[class*="applications"] tr,
+div[class*="applications"] table tr,
+[class*="TableRow"],
+[class*="table-row"] {
+  transition: all 0.2s ease !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+/* Row hover effects */
+.applications-table tr:hover,
+[class*="applications-table"] tr:hover,
+table[class*="applications"] tr:hover,
+div[class*="applications"] table tr:hover,
+[class*="TableRow"]:hover,
+[class*="table-row"]:hover {
+  background-color: #f8fafc !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Cell styling */
+.applications-table td,
+[class*="applications-table"] td,
+table[class*="applications"] td,
+div[class*="applications"] table td,
+[class*="TableCell"],
+[class*="table-cell"] {
+  padding: 14px 16px !important;
+  font-size: 0.875rem !important;
+  color: #334155 !important;
+  vertical-align: middle !important;
+  line-height: 1.5 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+/* Checkbox styling */
+.applications-table input[type="checkbox"],
+[class*="applications"] input[type="checkbox"],
+.applications-page input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  border: 2px solid #cbd5e1 !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease !important;
+  accent-color: #4f46e5 !important;
+}
+
+/* Status cell styling */
+[class*="status-cell"],
+td[class*="status"],
+div[class*="status"] {
+  font-weight: 600 !important;
+  border-radius: 20px !important;
+  padding: 4px 10px !important;
+  font-size: 0.75rem !important;
+  display: inline-block !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+
+/* Status colors */
+.status-approved,
+[class*="status-approved"],
+[data-status="approved"],
+td[data-status="approved"],
+div[data-status="approved"] {
+  background-color: #dcfce7 !important;
+  color: #16a34a !important;
+}
+
+.status-pending,
+[class*="status-pending"],
+[data-status="pending"],
+td[data-status="pending"],
+div[data-status="pending"] {
+  background-color: #fff7ed !important;
+  color: #ea580c !important;
+}
+
+.status-rejected,
+[class*="status-rejected"],
+[data-status="rejected"],
+td[data-status="rejected"],
+div[data-status="rejected"] {
+  background-color: #fee2e2 !important;
+  color: #ef4444 !important;
+}
+
+/* Link styling */
+.applications-table a,
+[class*="applications-table"] a,
+table[class*="applications"] a,
+div[class*="applications"] table a {
+  color: #4f46e5 !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.applications-table a:hover,
+[class*="applications-table"] a:hover,
+table[class*="applications"] a:hover,
+div[class*="applications"] table a:hover {
+  color: #6366f1 !important;
+  text-decoration: underline !important;
+}
+
+/* Buttons styling */
+.applications-page button,
+[class*="applications"] button,
+button[class*="applications"],
+.legacy-action-button,
+[class*="action-button"] {
+  padding: 8px 14px !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid #e2e8f0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  background: linear-gradient(180deg, #ffffff, #f8fafc) !important;
+  color: #334155 !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.applications-page button:hover,
+[class*="applications"] button:hover,
+button[class*="applications"]:hover,
+.legacy-action-button:hover,
+[class*="action-button"]:hover {
+  background: linear-gradient(180deg, #f8fafc, #f1f5f9) !important;
+  border-color: #cbd5e1 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Primary action button */
+button[class*="primary"],
+.primary-button,
+[class*="new-app"] {
+  background: linear-gradient(45deg, #4f46e5, #6366f1) !important;
+  color: white !important;
+  border: none !important;
+}
+
+button[class*="primary"]:hover,
+.primary-button:hover,
+[class*="new-app"]:hover {
+  background: linear-gradient(45deg, #4338ca, #4f46e5) !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3) !important;
+}
+
+/* Phone formatting */
+.phone-cell,
+td[class*="phone"],
+[class*="phone-number"] {
+  font-family: monospace !important;
+  font-size: 0.9rem !important;
+  letter-spacing: 0.03em !important;
+}
+
+/* Currency formatting */
+.currency-cell,
+td[class*="premium"],
+td[class*="amount"],
+[class*="premium"],
+[class*="amount"] {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+}
+
+/* Search field styling */
+.applications-page input[type="text"],
+[class*="applications"] input[type="text"],
+input[class*="applications"],
+.search-input,
+[class*="search-input"] {
+  padding: 10px 14px 10px 40px !important;
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  background-color: #f8fafc !important;
+  font-size: 0.875rem !important;
+  width: 100% !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.applications-page input[type="text"]:focus,
+[class*="applications"] input[type="text"]:focus,
+input[class*="applications"]:focus,
+.search-input:focus,
+[class*="search-input"]:focus {
+  outline: none !important;
+  border-color: #818cf8 !important;
+  box-shadow: 0 1px 2px rgba(129, 140, 248, 0.2) !important;
+  background-color: white !important;
+}
+
+/* Pagination controls */
+.pagination-container,
+[class*="pagination-container"],
+div[class*="pagination"] {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 16px !important;
+  border-top: 1px solid #e2e8f0 !important;
+  background-color: #f8fafc !important;
+  border-radius: 0 0 12px 12px !important;
+}
+
+.pagination-button,
+[class*="pagination-button"],
+button[class*="pagination"] {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  background: white !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+  font-size: 0.875rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.pagination-button:hover,
+[class*="pagination-button"]:hover,
+button[class*="pagination"]:hover {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+/* Apply highlight colors to rows based on status */
+tr[class*="approved"],
+tr[data-status="approved"] {
+  border-left: 3px solid #16a34a !important;
+}
+
+tr[class*="pending"],
+tr[data-status="pending"] {
+  border-left: 3px solid #ea580c !important;
+}
+
+tr[class*="rejected"],
+tr[data-status="rejected"] {
+  border-left: 3px solid #ef4444 !important;
+}
+
+/* NEW: Row background colors based on policy health */
+/* Paid & Issued - GREEN */
+tr[data-policy-health="Paid"] td,
+tr[data-paid-status="Paid"] td,
+tr[data-policy-status="Paid"] td,
+tr[data-status="Live"] td,
+tr[data-status="1st Month Paid"] td,
+tr[data-policy-health="Live"] td {
+  background-color: rgba(22, 163, 74, 0.05) !important;
+  border-left: 4px solid #16a34a !important;
+}
+
+/* Needs Attention - YELLOW */
+tr[data-policy-health="Needs Attention"] td,
+tr[data-status="Needs Attention"] td {
+  background-color: rgba(245, 158, 11, 0.05) !important;
+  border-left: 4px solid #f59e0b !important;
+}
+
+/* Cancelled - RED */
+tr[data-status*="Cancel"] td,
+tr[data-status="Cancelled"] td,
+tr[data-status="Not Taken"] td {
+  background-color: rgba(239, 68, 68, 0.05) !important;
+  border-left: 4px solid #ef4444 !important;
+}
+
+/* Pending First Payment - BLUE */
+tr[data-policy-health="Pending First Payment"] td,
+tr[data-status="Pending First Payment"] td,
+tr[data-status="Pending"] td {
+  background-color: rgba(59, 130, 246, 0.05) !important;
+  border-left: 4px solid #3b82f6 !important;
+}
+
+/* Extra UI enhancements for millennial appeal */
+.filter-toolbar,
+[class*="filter-toolbar"],
+div[class*="filter"] {
+  padding: 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  background: linear-gradient(45deg, #f8fafc, #f1f5f9) !important;
+  border-radius: 12px 12px 0 0 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+/* Cards at the top of the page */
+.stat-card {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  border: none !important;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Specific card styling */
+.total.stat-card {
+  background: linear-gradient(135deg, #4f46e5, #6366f1) !important;
+}
+
+.approved.stat-card {
+  background: linear-gradient(135deg, #16a34a, #22c55e) !important;
+}
+
+.attention.stat-card {
+  background: linear-gradient(135deg, #ea580c, #f97316) !important;
+}
+
+.paid.stat-card {
+  background: linear-gradient(135deg, #2563eb, #3b82f6) !important;
+}
+
+.premium.stat-card {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6) !important;
+}
+
+/* Card text styling */
+.stat-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  letter-spacing: 0.05em !important;
+}
+
+.stat-value {
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 1.5rem !important;
+  margin-top: 4px !important;
+  letter-spacing: -0.02em !important;
+}
+
+.stat-icon {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Tab styling */
+[role="tablist"],
+.tablist {
+  background-color: #f8fafc !important;
+  border-radius: 10px !important;
+  padding: 4px !important;
+  display: inline-flex !important;
+  gap: 4px !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+[role="tab"],
+.tab {
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #64748b !important;
+  transition: all 0.3s ease !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+[role="tab"][data-state="active"],
+.tab[data-state="active"],
+[role="tab"].active,
+.tab.active {
+  background-color: white !important;
+  color: #4338ca !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+} 
+/*!*****************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[3]!./src/app/agent/applications/components/status-styles.css ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************************************/
+.status-cell {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  text-align: center;
+  display: inline-block;
+}
+
+.status-active {
+  background-color: #e6f4ea;
+  color: #137333;
+}
+
+.status-pending {
+  background-color: #e8f0fe;
+  color: #1a73e8;
+}
+
+.status-attention {
+  background-color: #fef7e0;
+  color: #b06000;
+}
+
+.status-cancelled {
+  background-color: #fce8e6;
+  color: #c5221f;
+}
+
+/* Row background colors - updated with more subtle colors */
+tr.row-active {
+  background-color: rgba(19, 115, 51, 0.05) !important;
+}
+
+tr.row-pending {
+  background-color: rgba(26, 115, 232, 0.05) !important;
+}
+
+tr.row-attention {
+  background-color: rgba(176, 96, 0, 0.05) !important;
+}
+
+tr.row-cancelled {
+  background-color: rgba(197, 34, 31, 0.05) !important;
+}
+
+/* Hover effect for rows */
+tr.row-active:hover,
+tr.row-pending:hover,
+tr.row-attention:hover,
+tr.row-cancelled:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Optional: Staggered row striping within policy health groups */
+tr.row-active:nth-child(odd),
+tr.row-pending:nth-child(odd),
+tr.row-attention:nth-child(odd),
+tr.row-cancelled:nth-child(odd) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Payment Indicator Styles - Enhanced visibility */
+.payment-history-container {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 4px 0;
+  max-width: 100%;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  min-height: 28px; /* Ensure consistent height even when loading */
+}
+
+.payment-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  border: 1px solid #d0d0d0;
+  transition: all 0.2s ease;
+}
+
+/* Make first month indicator larger and more prominent */
+.payment-indicator.first-month {
+  width: 16px !important;
+  height: 16px !important;
+  border-width: 2px !important;
+  border-color: #666 !important;
+  z-index: 2;
+}
+
+.payment-indicator:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 4px rgba(0,0,0,0.3);
+}
+
+.payment-paid {
+  background-color: #137333;
+  border-color: #137333;
+  box-shadow: 0 0 3px rgba(19, 115, 51, 0.6);
+}
+
+.payment-missed {
+  background-color: #c5221f;
+  border-color: #c5221f;
+}
+
+.payment-pending {
+  background-color: #1a73e8;
+  border-color: #1a73e8;
+}
+
+.payment-nsf {
+  background-color: #ea8600;
+  border-color: #ea8600;
+}
+
+.payment-waived {
+  background-color: #80868b;
+  border-color: #80868b;
+}
+
+.payment-empty {
+  background-color: white;
+  border: 1px solid #d0d0d0;
+}
+
+.payment-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background-color: #333;
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.payment-indicator:hover .payment-tooltip {
+  opacity: 1;
+}
+
+.payment-indicator:active,
+.payment-indicator:focus {
+  background-color: white;
+  opacity: 1;
+  transform: scale(1.2);
+  box-shadow: 0 0 4px rgba(0,0,0,0.3);
+}
+
+.payment-empty:active,
+.payment-empty:focus {
+  background-color: white;
+  opacity: 1;
+}
+
+/* Payment Update Modal Styles */
+.payment-update-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.payment-modal-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.payment-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.payment-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.payment-modal-body {
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.payment-status-select,
+.payment-date-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.payment-modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancel-btn,
+.save-btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #333;
+}
+
+.save-btn {
+  background: #1a73e8;
+  border: 1px solid #1a73e8;
+  color: white;
+}
+
+/* Ensure popovers are fully opaque */
+.popover-content,
+[data-radix-popper-content-wrapper] > div {
+  background-color: white !important;
+  opacity: 1 !important;
+} 

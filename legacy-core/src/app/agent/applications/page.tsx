@@ -9,7 +9,7 @@ import { DataTable } from "./data-table"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Download, FileUp, HelpCircle, AlertCircle, Check, X, ArrowRight, Upload, Loader2, UploadCloud, CheckCircle, Pencil, Trash, Wand2, Eraser, XCircle } from "lucide-react"
+import { Plus, Download, FileUp, HelpCircle, AlertCircle, Check, X, ArrowRight, Upload, Loader2, UploadCloud, CheckCircle, Pencil, Trash, Wand2, Eraser, XCircle, ClipboardList, User, Ban, Star, Calendar, Users, DollarSign, MessageSquare, ArrowLeft, FileText, Eye } from "lucide-react"
 import { columns } from "./columns"
 import { PaymentHistoryLegend } from "./components/PaymentComponents"
 import { createClient } from "@/lib/supabase/client"
@@ -63,6 +63,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ErrorBoundary } from './components/ErrorBoundary'
+import Papa from 'papaparse'
 
 // Application Skeleton Loader Component
 const ApplicationSkeletonLoader = () => {
@@ -873,6 +874,129 @@ export default function AgentApplicationsPage() {
       'province': 'client_state',
       'st': 'client_state',
       
+      // New required fields
+      'city': 'city',
+      'client city': 'city',
+      'client_city': 'city',
+      'town': 'city',
+      
+      'zip': 'zip',
+      'zip code': 'zip',
+      'zipcode': 'zip',
+      'postal code': 'zip',
+      'postal': 'zip',
+      'client zip': 'zip',
+      'client_zip': 'zip',
+      
+      'gender': 'gender',
+      'client gender': 'gender',
+      'client_gender': 'gender',
+      'sex': 'gender',
+      
+      'date of birth': 'date_of_birth',
+      'date_of_birth': 'date_of_birth',
+      'birth date': 'date_of_birth',
+      'birth_date': 'date_of_birth',
+      'dob': 'date_of_birth',
+      'birthdate': 'date_of_birth',
+      
+      'primary beneficiary': 'primary_beneficiary',
+      'primary_beneficiary': 'primary_beneficiary',
+      'beneficiary': 'primary_beneficiary',
+      'beneficiary name': 'primary_beneficiary',
+      'beneficiary_name': 'primary_beneficiary',
+      
+      'relationship to insured': 'relationship_to_insured',
+      'relationship_to_insured': 'relationship_to_insured',
+      'beneficiary relationship': 'relationship_to_insured',
+      'beneficiary_relationship': 'relationship_to_insured',
+      'relationship': 'relationship_to_insured',
+      
+      'tobacco use': 'tobacco_nicotine_use',
+      'tobacco_use': 'tobacco_nicotine_use',
+      'tobacco': 'tobacco_nicotine_use',
+      'nicotine use': 'tobacco_nicotine_use',
+      'nicotine_use': 'tobacco_nicotine_use',
+      'nicotine': 'tobacco_nicotine_use',
+      'tobacco/nicotine use': 'tobacco_nicotine_use',
+      'tobacco_nicotine_use': 'tobacco_nicotine_use',
+      'smoker': 'tobacco_nicotine_use',
+      
+      'height feet': 'height_feet',
+      'height_feet': 'height_feet',
+      'feet': 'height_feet',
+      'height ft': 'height_feet',
+      'height_ft': 'height_feet',
+      'ft': 'height_feet',
+      
+      'height inches': 'height_inches',
+      'height_inches': 'height_inches',
+      'inches': 'height_inches',
+      'height in': 'height_inches',
+      'height_in': 'height_inches',
+      'in': 'height_inches',
+      
+      'weight': 'weight_lbs',
+      'weight lbs': 'weight_lbs',
+      'weight_lbs': 'weight_lbs',
+      'weight pounds': 'weight_lbs',
+      'weight_pounds': 'weight_lbs',
+      'lbs': 'weight_lbs',
+      'pounds': 'weight_lbs',
+      
+      'lung disease': 'medical_lung_disease',
+      'lung_disease': 'medical_lung_disease',
+      'asthma': 'medical_lung_disease',
+      'copd': 'medical_lung_disease',
+      'lung disease/asthma/copd': 'medical_lung_disease',
+      'medical_lung_disease': 'medical_lung_disease',
+      
+      'heart attack': 'medical_heart_attack',
+      'heart_attack': 'medical_heart_attack',
+      'stroke': 'medical_heart_attack',
+      'tia': 'medical_heart_attack',
+      'stents': 'medical_heart_attack',
+      'heart attack/stroke/tia/stents': 'medical_heart_attack',
+      'medical_heart_attack': 'medical_heart_attack',
+      
+      'heart failure': 'medical_heart_failure',
+      'heart_failure': 'medical_heart_failure',
+      'congestive heart failure': 'medical_heart_failure',
+      'congestive_heart_failure': 'medical_heart_failure',
+      'chf': 'medical_heart_failure',
+      'medical_heart_failure': 'medical_heart_failure',
+      
+      'blood clots': 'medical_blood_clots',
+      'blood_clots': 'medical_blood_clots',
+      'clots': 'medical_blood_clots',
+      'thrombosis': 'medical_blood_clots',
+      'medical_blood_clots': 'medical_blood_clots',
+      
+      'cancer': 'medical_cancer',
+      'any cancer': 'medical_cancer',
+      'any_cancer': 'medical_cancer',
+      'medical_cancer': 'medical_cancer',
+      
+      'diabetes': 'medical_diabetes',
+      'neuropathy': 'medical_diabetes',
+      'amputation': 'medical_diabetes',
+      'diabetes/neuropathy/amputation': 'medical_diabetes',
+      'medical_diabetes': 'medical_diabetes',
+      
+      'high blood pressure': 'medical_high_bp',
+      'high_blood_pressure': 'medical_high_bp',
+      'hbp': 'medical_high_bp',
+      'hypertension': 'medical_high_bp',
+      'high bp': 'medical_high_bp',
+      'high_bp': 'medical_high_bp',
+      'medical_high_bp': 'medical_high_bp',
+      
+      'high cholesterol': 'medical_high_cholesterol',
+      'high_cholesterol': 'medical_high_cholesterol',
+      'cholesterol': 'medical_high_cholesterol',
+      'hypercholesterolemia': 'medical_high_cholesterol',
+      'medical_high_cholesterol': 'medical_high_cholesterol',
+      
       // Policy info
       'month': 'month',
       'mo': 'month',
@@ -1221,24 +1345,31 @@ export default function AgentApplicationsPage() {
             // Handle different field types
             switch (field) {
               case 'pms_form_filled_out':
+              case 'tobacco_nicotine_use':
+              case 'medical_lung_disease':
+              case 'medical_heart_attack':
+              case 'medical_heart_failure':
+              case 'medical_blood_clots':
+              case 'medical_cancer':
+              case 'medical_diabetes':
+              case 'medical_high_bp':
+              case 'medical_high_cholesterol':
                 record[field] = safeBooleanConversion(rawValue);
                 break;
                 
               case 'monthly_premium':
-                record[field] = safeNumberConversion(rawValue);
-                break;
-                
               case 'ap':
-                record[field] = safeNumberConversion(rawValue);
-                break;
-                
               case 'commission_amount':
+              case 'height_feet':
+              case 'height_inches':
+              case 'weight_lbs':
                 record[field] = safeNumberConversion(rawValue);
                 break;
                 
               case 'policy_submit_date':
               case 'effective_policy_date':
               case 'commission_paid_date':
+              case 'date_of_birth':
                 record[field] = safeDateConversion(rawValue);
                 break;
                 
@@ -2225,12 +2356,19 @@ export default function AgentApplicationsPage() {
                     <DialogTrigger asChild>
                       <Button variant="outline">Bulk Add Applications</Button>
                     </DialogTrigger>
-                    <DialogContent className="w-[90vw] max-h-[85vh] max-w-[1000px] overflow-auto bg-background border shadow-lg p-4" style={{backgroundColor: 'white'}}>
-                      <DialogHeader>
-                        <DialogTitle>Bulk Add Applications</DialogTitle>
-                        <DialogDescription>
-                          Import multiple applications at once from a spreadsheet or CSV file.
-                        </DialogDescription>
+                    <DialogContent className="w-[95vw] max-h-[90vh] max-w-[1200px] overflow-auto bg-background border shadow-lg p-4 rounded-xl" style={{backgroundColor: 'white'}}>
+                      <DialogHeader className="pb-2 border-b mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 bg-blue-100 rounded-full">
+                            <Upload className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <DialogTitle className="text-xl">Bulk Add Applications</DialogTitle>
+                            <DialogDescription className="text-sm">
+                              Import multiple applications at once from a spreadsheet or CSV file.
+                            </DialogDescription>
+                          </div>
+                        </div>
                       </DialogHeader>
                       
                       {importSuccess ? (
@@ -2376,159 +2514,327 @@ export default function AgentApplicationsPage() {
                             </p>
                             
                             <div className="flex flex-wrap gap-3 mb-4">
-                              <Button variant="outline" size="sm" onClick={handleAutoMap}>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={handleAutoMap}
+                                className="bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 hover:text-blue-800 transition-colors"
+                              >
                                 <Wand2 className="h-4 w-4 mr-2" />
                                 Auto-map columns
                               </Button>
-                              <Button variant="outline" size="sm" onClick={() => {
-                                const newMappings = {};
-                                Object.keys(bulkDataPreview[0] || {}).forEach(header => {
-                                  newMappings[header] = 'unmapped';
-                                });
-                                setColumnMappings(newMappings);
-                              }}>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => {
+                                  const newMappings = {};
+                                  Object.keys(bulkDataPreview[0] || {}).forEach(header => {
+                                    newMappings[header] = 'unmapped';
+                                  });
+                                  setColumnMappings(newMappings);
+                                }}
+                                className="hover:bg-red-50 hover:text-red-600 transition-colors"
+                              >
                                 <XCircle className="h-4 w-4 mr-2" />
                                 Clear all mappings
                               </Button>
                             </div>
-                          </div>
-                          
-                          <div className="max-h-[50vh] overflow-auto border rounded-md">
-                            <Table>
-                              <TableHeader className="bg-muted sticky top-0 z-10">
-                                <TableRow className="hover:bg-transparent">
-                                  {/* Make sure we're displaying every column from the preview data */}
-                                  {Object.keys(bulkDataPreview[0] || {}).map((header) => (
-                                    <TableHead 
-                                      key={`header-${header}`} 
-                                      className="text-xs text-center p-2 border-r border-gray-200 last:border-r-0"
-                                    >
-                                      <div className="mb-2 font-bold text-gray-900 break-words max-w-[150px]">{header}</div>
-                                      <Select
-                                        value={columnMappings[header] || 'unmapped'}
-                                        onValueChange={(value) => {
-                                          setColumnMappings(prev => ({
-                                            ...prev,
-                                            [header]: value
-                                          }));
-                                        }}
-                                      >
-                                        <SelectTrigger 
-                                          className={`h-8 text-xs bg-white w-full max-w-[150px] mx-auto ${
-                                            columnMappings[header] && columnMappings[header] !== 'unmapped' ? 'bg-blue-50 border-blue-300 text-blue-700' : ''
-                                          }`}
-                                        >
-                                          <SelectValue placeholder="Select field..." />
-                                        </SelectTrigger>
-                                        <SelectContent className="max-h-[300px]">
-                                          <SelectGroup>
-                                            <SelectLabel>Basic Client Info</SelectLabel>
-                                            <SelectItem value="unmapped">- Ignore this column -</SelectItem>
-                                          <SelectItem value="proposed_insured">Proposed Insured</SelectItem>
-                                          <SelectItem value="client_phone_number">Client Phone Number</SelectItem>
-                                          <SelectItem value="client_state">Client State</SelectItem>
-                                            <SelectItem value="client_email">Client Email</SelectItem>
-                                          </SelectGroup>
-                                          
-                                          <SelectGroup>
-                                            <SelectLabel>Policy Basics</SelectLabel>
-                                          <SelectItem value="policy_number">Policy Number</SelectItem>
-                                          <SelectItem value="carrier">Carrier</SelectItem>
-                                            <SelectItem value="carrier_id">Carrier ID</SelectItem>
-                                          <SelectItem value="product">Product</SelectItem>
-                                          <SelectItem value="monthly_premium">Monthly Premium</SelectItem>
-                                            <SelectItem value="ap">AP (Annual Premium)</SelectItem>
-                                          <SelectItem value="status">Status</SelectItem>
-                                          <SelectItem value="paid_status">Paid Status</SelectItem>
-                                          </SelectGroup>
-                                          
-                                          <SelectGroup>
-                                            <SelectLabel>Dates</SelectLabel>
-                                            <SelectItem value="month">Month</SelectItem>
-                                            <SelectItem value="policy_submit_date">Policy Submit Date</SelectItem>
-                                            <SelectItem value="effective_policy_date">Effective Policy Date</SelectItem>
-                                            <SelectItem value="commission_paid_date">Commission Paid Date</SelectItem>
-                                          </SelectGroup>
-                                          
-                                          <SelectGroup>
-                                            <SelectLabel>Agent Information</SelectLabel>
-                                            <SelectItem value="closed_by_agent">Closed By Agent</SelectItem>
-                                          <SelectItem value="point_of_sale">Point of Sale</SelectItem>
-                                          <SelectItem value="pms_form_filled_out">PMS Form Filled Out</SelectItem>
-                                          <SelectItem value="split_with">Split With</SelectItem>
-                                            <SelectItem value="paid_split">Paid Split</SelectItem>
-                                          </SelectGroup>
-                                          
-                                          <SelectGroup>
-                                            <SelectLabel>Commission & Status</SelectLabel>
-                                          <SelectItem value="effective_policy_status">Effective Policy Status</SelectItem>
-                                            <SelectItem value="commission_status">Commission Status</SelectItem>
-                                            <SelectItem value="policy_payment_cycle">Policy Payment Cycle</SelectItem>
-                                            <SelectItem value="commission_amount">Commission Amount</SelectItem>
-                                          </SelectGroup>
-                                          
-                                          <SelectGroup>
-                                            <SelectLabel>Notes</SelectLabel>
-                                          <SelectItem value="notes">Notes</SelectItem>
-                                          <SelectItem value="notes_for_pay">Notes for Pay</SelectItem>
-                                          </SelectGroup>
-                                        </SelectContent>
-                                      </Select>
-                                    </TableHead>
-                                  ))}
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {bulkDataPreview.slice(0, 5).map((row, rowIndex) => (
-                                  <TableRow key={`preview-row-${rowIndex}`} className={rowIndex % 2 === 0 ? 'bg-gray-50' : ''}>
-                                    {Object.keys(row).map((key) => (
-                                      <TableCell key={`cell-${rowIndex}-${key}`} className="p-2 border-r border-gray-200 last:border-r-0 text-xs">
-                                        {typeof row[key] === 'string' ? row[key] : String(row[key] || '')}
-                                      </TableCell>
-                                    ))}
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          </div>
 
-                          <div className="mt-4 bg-gray-50 p-3 rounded-md border border-gray-200">
-                            <p className="text-sm font-medium">Preview of first 5 rows ({bulkDataPreview.length} total rows found)</p>
-                            <div className="flex gap-6 mt-2">
-                              <div className="text-sm">
-                                <span className="font-bold">Required fields: </span>
-                                <span className={!columnMappings.proposed_insured ? 'text-red-500' : 'text-green-600'}>Proposed Insured</span>,
-                                <span className={!columnMappings.carrier ? 'text-red-500' : 'text-green-600'}> Carrier</span>,
-                                <span className={!columnMappings.product ? 'text-red-500' : 'text-green-600'}> Product</span>
-                            </div>
-                              <div className="text-sm">
-                                <span className="font-bold">Mapped: </span> 
-                                <span className="font-mono">{Object.values(columnMappings).filter(v => v && v !== 'ignore').length}</span> of <span className="font-mono">{Object.keys(bulkDataPreview[0] || {}).length}</span> columns
+                            {/* Mapping progress card */}
+                            <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 shadow-sm">
+                              <div className="flex items-center justify-between">
+                                <div className="flex gap-2 items-center">
+                                  <ClipboardList className="h-5 w-5 text-blue-600" />
+                                  <h4 className="font-medium">Mapping Progress</h4>
+                                </div>
+                                <div className="text-sm">
+                                  <span className="font-mono font-medium">{Object.values(columnMappings).filter(v => v && v !== 'unmapped').length}</span> 
+                                  <span className="text-muted-foreground"> of </span>
+                                  <span className="font-mono font-medium">{Object.keys(bulkDataPreview[0] || {}).length}</span>
+                                  <span className="text-muted-foreground"> columns mapped</span>
+                                </div>
+                              </div>
+                              
+                              <div className="mt-3">
+                                <Progress 
+                                  value={(Object.values(columnMappings).filter(v => v && v !== 'unmapped').length / Object.keys(bulkDataPreview[0] || {}).length) * 100} 
+                                  className="h-2 bg-blue-100"
+                                />
+                              </div>
+                              
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                <div className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 flex items-center gap-1">
+                                  <Check className="h-3 w-3" />
+                                  <span className={columnMappings.proposed_insured ? "font-medium" : "text-blue-400"}>
+                                    Proposed Insured {columnMappings.proposed_insured ? "✓" : ""}
+                                  </span>
+                                </div>
+                                <div className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 flex items-center gap-1">
+                                  <Check className="h-3 w-3" />
+                                  <span className={columnMappings.carrier ? "font-medium" : "text-blue-400"}>
+                                    Carrier {columnMappings.carrier ? "✓" : ""}
+                                  </span>
+                                </div>
+                                <div className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 flex items-center gap-1">
+                                  <Check className="h-3 w-3" />
+                                  <span className={columnMappings.product ? "font-medium" : "text-blue-400"}>
+                                    Product {columnMappings.product ? "✓" : ""}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </div>
                           
-                          <div className="flex justify-end mt-6 space-x-2">
+                          {/* Column Mapping Interface */}
+                          <div className="space-y-6 mb-6">
+                            {Object.keys(bulkDataPreview[0] || {}).map((header) => {
+                              const isMapped = columnMappings[header] && columnMappings[header] !== 'unmapped';
+                              const isRequired = ['proposed_insured', 'carrier', 'product'].includes(columnMappings[header]);
+                              
+                              return (
+                                <div 
+                                  key={`map-row-${header}`} 
+                                  className={`flex flex-col sm:flex-row items-start sm:items-center border rounded-lg p-3 transition-colors ${
+                                    isMapped 
+                                      ? 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200' 
+                                      : 'bg-white hover:bg-gray-50 border-gray-200'
+                                  }`}
+                                >
+                                  <div className="w-full sm:w-1/3 mb-3 sm:mb-0 flex items-center gap-2">
+                                    <div className={`p-2 rounded-md ${isMapped ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                                      <FileText className={`h-4 w-4 ${isMapped ? 'text-blue-600' : 'text-gray-600'}`} />
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="font-medium text-sm truncate max-w-full sm:max-w-[200px]" title={header}>
+                                        {header}
+                                        {isRequired && (
+                                          <Badge variant="outline" className="ml-2 bg-green-100 text-green-700 border-green-200">
+                                            Required
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">
+                                        {bulkDataPreview[0][header] ? 
+                                          <span className="opacity-75">Sample: {String(bulkDataPreview[0][header]).substring(0, 30)}{String(bulkDataPreview[0][header]).length > 30 ? '...' : ''}</span> 
+                                          : 'No sample value'}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="hidden sm:flex flex-1 px-4 justify-center items-center">
+                                    <div className={`h-0.5 w-full ${isMapped ? 'bg-blue-200' : 'bg-gray-200'}`}></div>
+                                  </div>
+                                  
+                                  <div className="w-full sm:w-1/3 mt-2 sm:mt-0">
+                                    <Select
+                                      value={columnMappings[header] || 'unmapped'}
+                                      onValueChange={(value) => {
+                                        setColumnMappings(prev => ({
+                                          ...prev,
+                                          [header]: value
+                                        }));
+                                      }}
+                                    >
+                                      <SelectTrigger 
+                                        className={`w-full transition-all ${
+                                          isMapped 
+                                            ? 'bg-blue-100 border-blue-300 text-blue-700 shadow-sm hover:bg-blue-200' 
+                                            : 'bg-white hover:bg-gray-50'
+                                        }`}
+                                      >
+                                        <SelectValue placeholder="Map to field..." />
+                                      </SelectTrigger>
+                                      <SelectContent className="max-h-[300px]">
+                                        <SelectGroup>
+                                          <SelectLabel className="text-xs flex items-center gap-1">
+                                            <User className="h-3 w-3" />
+                                            Basic Client Info
+                                          </SelectLabel>
+                                          <SelectItem value="unmapped" className="text-gray-500">
+                                            <div className="flex items-center">
+                                              <Ban className="h-3 w-3 mr-2 opacity-70" />
+                                              <span>Ignore this column</span>
+                                            </div>
+                                          </SelectItem>
+                                          <SelectItem value="proposed_insured" className="text-blue-700 font-medium">
+                                            <div className="flex items-center">
+                                              <Star className="h-3 w-3 mr-2 text-amber-500" />
+                                              <span>Proposed Insured (Required)</span>
+                                            </div>
+                                          </SelectItem>
+                                          <SelectItem value="client_phone_number">Client Phone Number</SelectItem>
+                                          <SelectItem value="client_state">Client State</SelectItem>
+                                          <SelectItem value="client_email">Client Email</SelectItem>
+                                        </SelectGroup>
+                                        
+                                        <SelectGroup>
+                                          <SelectLabel className="text-xs flex items-center gap-1">
+                                            <FileText className="h-3 w-3" />
+                                            Policy Basics
+                                          </SelectLabel>
+                                          <SelectItem value="policy_number">Policy Number</SelectItem>
+                                          <SelectItem value="carrier" className="text-blue-700 font-medium">
+                                            <div className="flex items-center">
+                                              <Star className="h-3 w-3 mr-2 text-amber-500" />
+                                              <span>Carrier (Required)</span>
+                                            </div>
+                                          </SelectItem>
+                                          <SelectItem value="carrier_id">Carrier ID</SelectItem>
+                                          <SelectItem value="product" className="text-blue-700 font-medium">
+                                            <div className="flex items-center">
+                                              <Star className="h-3 w-3 mr-2 text-amber-500" />
+                                              <span>Product (Required)</span>
+                                            </div>
+                                          </SelectItem>
+                                          <SelectItem value="monthly_premium">Monthly Premium</SelectItem>
+                                          <SelectItem value="ap">AP (Annual Premium)</SelectItem>
+                                          <SelectItem value="status">Status</SelectItem>
+                                          <SelectItem value="paid_status">Paid Status</SelectItem>
+                                        </SelectGroup>
+                                        
+                                        <SelectGroup>
+                                          <SelectLabel className="text-xs flex items-center gap-1">
+                                            <Calendar className="h-3 w-3" />
+                                            Dates
+                                          </SelectLabel>
+                                          <SelectItem value="month">Month</SelectItem>
+                                          <SelectItem value="policy_submit_date">Policy Submit Date</SelectItem>
+                                          <SelectItem value="effective_policy_date">Effective Policy Date</SelectItem>
+                                          <SelectItem value="commission_paid_date">Commission Paid Date</SelectItem>
+                                        </SelectGroup>
+                                        
+                                        <SelectGroup>
+                                          <SelectLabel className="text-xs flex items-center gap-1">
+                                            <Users className="h-3 w-3" />
+                                            Agent Information
+                                          </SelectLabel>
+                                          <SelectItem value="closed_by_agent">Closed By Agent</SelectItem>
+                                          <SelectItem value="point_of_sale">Point of Sale</SelectItem>
+                                          <SelectItem value="pms_form_filled_out">PMS Form Filled Out</SelectItem>
+                                          <SelectItem value="split_with">Split With</SelectItem>
+                                          <SelectItem value="paid_split">Paid Split</SelectItem>
+                                        </SelectGroup>
+                                        
+                                        <SelectGroup>
+                                          <SelectLabel className="text-xs flex items-center gap-1">
+                                            <DollarSign className="h-3 w-3" />
+                                            Commission & Status
+                                          </SelectLabel>
+                                          <SelectItem value="effective_policy_status">Effective Policy Status</SelectItem>
+                                          <SelectItem value="commission_status">Commission Status</SelectItem>
+                                          <SelectItem value="policy_payment_cycle">Policy Payment Cycle</SelectItem>
+                                          <SelectItem value="commission_amount">Commission Amount</SelectItem>
+                                        </SelectGroup>
+                                        
+                                        <SelectGroup>
+                                          <SelectLabel className="text-xs flex items-center gap-1">
+                                            <MessageSquare className="h-3 w-3" />
+                                            Notes
+                                          </SelectLabel>
+                                          <SelectItem value="notes">Notes</SelectItem>
+                                          <SelectItem value="notes_for_pay">Notes for Pay</SelectItem>
+                                        </SelectGroup>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+
+                          {/* Data Preview Section */}
+                          <div className="mt-6 border rounded-lg overflow-hidden">
+                            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-3 border-b">
+                              <h4 className="font-medium flex items-center gap-2">
+                                <Eye className="h-4 w-4 text-blue-600" />
+                                Data Preview
+                                <Badge variant="outline" className="ml-2 bg-blue-100 text-blue-700 hover:bg-blue-200">
+                                  First 5 rows ({bulkDataPreview.length} total)
+                                </Badge>
+                              </h4>
+                            </div>
+                            
+                            <div className="overflow-x-auto">
+                              <Table className="min-w-full">
+                                <TableHeader className="bg-gray-50">
+                                  <TableRow>
+                                    {Object.keys(bulkDataPreview[0] || {}).map((header) => {
+                                      const isMapped = columnMappings[header] && columnMappings[header] !== 'unmapped';
+                                      
+                                      return (
+                                        <TableHead 
+                                          key={`preview-header-${header}`}
+                                          className={`text-xs font-medium px-3 py-2 ${
+                                            isMapped ? 'text-blue-700' : 'text-gray-500'
+                                          }`}
+                                        >
+                                          {header}
+                                          {isMapped && (
+                                            <div className="text-xs mt-1 font-normal">
+                                              ↓ <span className="text-blue-600">{columnMappings[header].replace(/_/g, ' ')}</span>
+                                            </div>
+                                          )}
+                                        </TableHead>
+                                      );
+                                    })}
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {bulkDataPreview.slice(0, 5).map((row, rowIndex) => (
+                                    <TableRow key={`preview-row-${rowIndex}`} className={rowIndex % 2 === 0 ? 'bg-gray-50/50' : ''}>
+                                      {Object.keys(row).map((key) => {
+                                        const isMapped = columnMappings[key] && columnMappings[key] !== 'unmapped';
+                                        
+                                        return (
+                                          <TableCell 
+                                            key={`preview-cell-${rowIndex}-${key}`}
+                                            className={`text-xs px-3 py-2 ${
+                                              isMapped ? 'text-slate-800' : 'text-slate-500'
+                                            }`}
+                                          >
+                                            {typeof row[key] === 'string' ? row[key] : String(row[key] || '')}
+                                          </TableCell>
+                                        );
+                                      })}
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center mt-6 pt-4 border-t">
                             <Button variant="outline" onClick={() => setMappingStep(false)}>
-                              Back
+                              <ArrowLeft className="h-4 w-4 mr-2" />
+                              Back to Upload
                             </Button>
-                            <Button 
-                              onClick={handleBulkImport} 
-                              disabled={importLoading || Object.values(columnMappings).filter(Boolean).length === 0}
-                              className={Object.values(columnMappings).filter(Boolean).length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-                            >
-                              {importLoading ? (
-                                <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Importing...
-                                </>
-                              ) : (
-                                <>
-                                  <Upload className="mr-2 h-4 w-4" />
-                                  Import Applications
-                                </>
-                              )}
-                            </Button>
+                            
+                            <div className="flex items-center gap-3">
+                              <div className="text-sm font-medium">
+                                {Object.values(columnMappings).filter(v => v && v !== 'unmapped').length} fields mapped
+                              </div>
+                              <Button 
+                                onClick={handleBulkImport} 
+                                disabled={importLoading || Object.values(columnMappings).filter(v => v && v !== 'unmapped').length === 0}
+                                className={`transition-all ${
+                                  Object.values(columnMappings).filter(v => v && v !== 'unmapped').length === 0 
+                                    ? 'opacity-50 cursor-not-allowed' 
+                                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'
+                                }`}
+                              >
+                                {importLoading ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Importing...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Upload className="mr-2 h-4 w-4" />
+                                    Import Applications
+                                  </>
+                                )}
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       )}

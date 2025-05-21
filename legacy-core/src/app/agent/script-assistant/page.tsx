@@ -157,11 +157,27 @@ export default function ScriptAssistantPage() {
       'firstName', 
       'lastName', 
       'phoneNumber', 
+      'street',
       'state', 
+      'city',
+      'zip',
+      'gender',
+      'dateOfBirth',
+      'beneficiaryName',
+      'beneficiaryRelationship',
+      'tobaccoUse',
+      'heightFeet',
+      'heightInches',
+      'weight',
+      'coverageAmount',
       'agency', // carrier
       'coverageType', // product type
       'monthlyPremium',
-      'product' // specific product
+      'product', // specific product
+      'policyNumber',
+      'effectivePolicyDate',
+      'policySubmitDate',
+      'paidStatus'
     ]
     
     const newErrors: Record<string, boolean> = {}
@@ -173,6 +189,28 @@ export default function ScriptAssistantPage() {
         hasErrors = true
       }
     })
+    
+    // Validate medical conditions are answered
+    const medicalFieldsRequired = [
+      'lungDisease',
+      'heartAttack',
+      'chf',
+      'bloodClots',
+      'cancer',
+      'diabetes',
+      'highBP',
+      'highCholesterol'
+    ]
+    
+    // Make sure at least one medical condition checkbox has been checked (either Yes or No)
+    let atLeastOneMedicalConditionAnswered = medicalFieldsRequired.some(field => 
+      typeof formData.medicalConditions[field as keyof typeof formData.medicalConditions] === 'boolean'
+    );
+    
+    if (!atLeastOneMedicalConditionAnswered) {
+      newErrors['medicalConditions'] = true;
+      hasErrors = true;
+    }
     
     if (hasErrors) {
       setErrors(newErrors)
@@ -202,8 +240,12 @@ export default function ScriptAssistantPage() {
         client_phone_number: formData.phoneNumber,
         client_state: formData.state,
         client_email: formData.email,
+        street_address: formData.street,
         client_address: `${formData.street}, ${formData.city}, ${formData.state} ${formData.zip}`.trim(),
         date_of_birth: formData.dateOfBirth,
+        city: formData.city,
+        zip: formData.zip,
+        gender: formData.gender,
         ssn: formData.ssn,
         
         // Policy Info
@@ -224,16 +266,30 @@ export default function ScriptAssistantPage() {
         funeral_type: formData.funeralType,
         funeral_planner: formData.funeralPlanner,
         beneficiary_name: formData.beneficiaryName,
+        primary_beneficiary: formData.beneficiaryName,
         beneficiary_relationship: formData.beneficiaryRelationship,
+        relationship_to_insured: formData.beneficiaryRelationship,
         contingent_beneficiary: formData.contingentBeneficiary,
         
         // Health Info
         tobacco_use: formData.tobaccoUse,
+        tobacco_nicotine_use: formData.tobaccoUse,
         tobacco_type: formData.tobaccoType,
         tobacco_frequency: formData.tobaccoFrequency,
         height: `${formData.heightFeet}'${formData.heightInches}"`,
+        height_feet: parseInt(formData.heightFeet) || null,
+        height_inches: parseInt(formData.heightInches) || null,
         weight: formData.weight,
+        weight_lbs: parseInt(formData.weight) || null,
         medical_conditions: JSON.stringify(formData.medicalConditions),
+        medical_lung_disease: formData.medicalConditions.lungDisease,
+        medical_heart_attack: formData.medicalConditions.heartAttack,
+        medical_heart_failure: formData.medicalConditions.chf,
+        medical_blood_clots: formData.medicalConditions.bloodClots,
+        medical_cancer: formData.medicalConditions.cancer,
+        medical_diabetes: formData.medicalConditions.diabetes,
+        medical_high_bp: formData.medicalConditions.highBP,
+        medical_high_cholesterol: formData.medicalConditions.highCholesterol,
         medications: formData.medications,
         
         // Policy Selection
@@ -477,7 +533,7 @@ export default function ScriptAssistantPage() {
               <div className="rounded-md border border-blue-100 bg-blue-50 p-4">
                 <h3 className="text-lg font-semibold text-blue-800 border-b border-blue-200 pb-2 mb-4">CLIENT INFORMATION</h3>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="firstName" className="font-medium">
                         First Name <span className="text-red-500">*</span>
@@ -486,7 +542,7 @@ export default function ScriptAssistantPage() {
                         id="firstName" 
                         value={formData.firstName}
                         onChange={(e) => handleChange('firstName', e.target.value)}
-                        className={`${styles.input} ${errors.firstName ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                        className={`bg-white ${errors.firstName ? 'border-red-500 ring-1 ring-red-500' : ''}`}
                         data-error={errors.firstName || undefined}
                       />
                     </div>
@@ -498,71 +554,87 @@ export default function ScriptAssistantPage() {
                         id="lastName" 
                         value={formData.lastName}
                         onChange={(e) => handleChange('lastName', e.target.value)}
-                        className={`${styles.input} ${errors.lastName ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                        className={`bg-white ${errors.lastName ? 'border-red-500 ring-1 ring-red-500' : ''}`}
                         data-error={errors.lastName || undefined}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="dateOfBirth" className="font-medium">
+                        Date of Birth <span className="text-red-500">*</span>
+                      </Label>
+                      <Input 
+                        id="dateOfBirth" 
+                        type="date"
+                        value={formData.dateOfBirth}
+                        onChange={(e) => handleChange('dateOfBirth', e.target.value)}
+                        className={`bg-white ${errors.dateOfBirth ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                        data-error={errors.dateOfBirth || undefined}
                       />
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="dateOfBirth" className="font-medium">Date of Birth</Label>
-                      <Input 
-                        id="dateOfBirth" 
-                        type="date"
-                        value={formData.dateOfBirth}
-                        onChange={(e) => handleChange('dateOfBirth', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div>
                       <Label htmlFor="phoneNumber" className="font-medium">
                         Phone Number <span className="text-red-500">*</span>
                       </Label>
                       <Input 
                         id="phoneNumber" 
-                        placeholder="(555) 555-5555"
                         value={formData.phoneNumber}
                         onChange={(e) => handleChange('phoneNumber', e.target.value)}
-                        className={`${styles.input} ${errors.phoneNumber ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                        className={`bg-white ${errors.phoneNumber ? 'border-red-500 ring-1 ring-red-500' : ''}`}
                         data-error={errors.phoneNumber || undefined}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email" className="font-medium">Email</Label>
+                      <Input 
+                        id="email" 
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => handleChange('email', e.target.value)}
+                        className="bg-white"
                       />
                     </div>
                   </div>
                   
-                  <div>
-                    <Label htmlFor="street" className="font-medium">Street</Label>
-                    <Input 
-                      id="street" 
-                      value={formData.street}
-                      onChange={(e) => handleChange('street', e.target.value)}
-                      className={styles.input}
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="city" className="font-medium">City</Label>
+                      <Label htmlFor="street" className="font-medium">
+                        Street Address <span className="text-red-500">*</span>
+                      </Label>
+                      <Input 
+                        id="street" 
+                        value={formData.street}
+                        onChange={(e) => handleChange('street', e.target.value)}
+                        className={`bg-white ${errors.street ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                        data-error={errors.street || undefined}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="city" className="font-medium">
+                        City <span className="text-red-500">*</span>
+                      </Label>
                       <Input 
                         id="city" 
                         value={formData.city}
                         onChange={(e) => handleChange('city', e.target.value)}
-                        className={styles.input}
+                        className={`bg-white ${errors.city ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                        data-error={errors.city || undefined}
                       />
                     </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="state" className="font-medium">
                         State <span className="text-red-500">*</span>
                       </Label>
-                      <Select
+                      <Select 
                         value={formData.state}
                         onValueChange={(value) => handleChange('state', value)}
                       >
-                        <SelectTrigger 
-                          id="state" 
-                          className={`${styles.select} ${errors.state ? 'border-red-500 ring-1 ring-red-500' : ''}`}
-                          data-error={errors.state || undefined}
-                        >
+                        <SelectTrigger className={`${styles.select} ${errors.state ? 'border-red-500 ring-1 ring-red-500' : ''}`} data-error={errors.state || undefined}>
                           <SelectValue placeholder="Select state" />
                         </SelectTrigger>
                         <SelectContent className={styles.selectContent}>
@@ -573,34 +645,26 @@ export default function ScriptAssistantPage() {
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="zip" className="font-medium">ZIP</Label>
+                      <Label htmlFor="zip" className="font-medium">
+                        ZIP <span className="text-red-500">*</span>
+                      </Label>
                       <Input 
                         id="zip" 
                         value={formData.zip}
                         onChange={(e) => handleChange('zip', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="email" className="font-medium">Email Address</Label>
-                      <Input 
-                        id="email" 
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => handleChange('email', e.target.value)}
-                        className={styles.input}
+                        className={`bg-white ${errors.zip ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                        data-error={errors.zip || undefined}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="gender" className="font-medium">Gender</Label>
-                      <Select
+                      <Label htmlFor="gender" className="font-medium">
+                        Gender <span className="text-red-500">*</span>
+                      </Label>
+                      <Select 
                         value={formData.gender}
                         onValueChange={(value) => handleChange('gender', value)}
                       >
-                        <SelectTrigger id="gender" className={styles.select}>
+                        <SelectTrigger className={`${styles.select} ${errors.gender ? 'border-red-500 ring-1 ring-red-500' : ''}`} data-error={errors.gender || undefined}>
                           <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
                         <SelectContent className={styles.selectContent}>
@@ -620,7 +684,7 @@ export default function ScriptAssistantPage() {
                         placeholder="XXX-XX-XXXX"
                         value={formData.ssn}
                         onChange={(e) => handleChange('ssn', e.target.value)}
-                        className={styles.input}
+                        className="bg-white"
                       />
                     </div>
                     <div className="flex items-center space-x-2 pt-6">
@@ -920,21 +984,27 @@ export default function ScriptAssistantPage() {
                   
                   <div className="grid grid-cols-2 gap-4 mt-4">
                     <div>
-                      <Label htmlFor="beneficiaryName" className="font-medium">Primary Beneficiary</Label>
+                      <Label htmlFor="beneficiaryName" className="font-medium">
+                        Primary Beneficiary <span className="text-red-500">*</span>
+                      </Label>
                       <Input 
                         id="beneficiaryName" 
                         value={formData.beneficiaryName}
                         onChange={(e) => handleChange('beneficiaryName', e.target.value)}
-                        className="bg-white mt-1"
+                        className={`bg-white mt-1 ${errors.beneficiaryName ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                        data-error={errors.beneficiaryName || undefined}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="beneficiaryRelationship" className="font-medium">Relationship</Label>
+                      <Label htmlFor="beneficiaryRelationship" className="font-medium">
+                        Relationship <span className="text-red-500">*</span>
+                      </Label>
                       <Input 
                         id="beneficiaryRelationship" 
                         value={formData.beneficiaryRelationship}
                         onChange={(e) => handleChange('beneficiaryRelationship', e.target.value)}
-                        className="bg-white mt-1"
+                        className={`bg-white mt-1 ${errors.beneficiaryRelationship ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                        data-error={errors.beneficiaryRelationship || undefined}
                       />
                     </div>
                   </div>
@@ -957,84 +1027,102 @@ export default function ScriptAssistantPage() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white p-3 rounded-md">
-                      <Label className="font-medium">Tobacco/Nicotine Use</Label>
-                      <div className="flex items-center space-x-2 mt-2">
-                        <Checkbox 
-                          id="tobaccoUse"
-                          checked={formData.tobaccoUse}
-                          onCheckedChange={(checked) => handleChange('tobaccoUse', checked)}
-                          className={styles.checkbox}
-                        />
-                        <Label htmlFor="tobaccoUse">Yes</Label>
-                      </div>
-                      
-                      {formData.tobaccoUse && (
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          <div>
-                            <Label htmlFor="tobaccoType" className="text-sm">Type</Label>
-                            <Input 
-                              id="tobaccoType" 
-                              value={formData.tobaccoType}
-                              onChange={(e) => handleChange('tobaccoType', e.target.value)}
-                              className="bg-white text-sm h-8"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="tobaccoFrequency" className="text-sm">Frequency</Label>
-                            <Input 
-                              id="tobaccoFrequency" 
-                              value={formData.tobaccoFrequency}
-                              onChange={(e) => handleChange('tobaccoFrequency', e.target.value)}
-                              className="bg-white text-sm h-8"
-                            />
-                          </div>
+                      <Label className="font-medium">
+                        Tobacco/Nicotine Use <span className="text-red-500">*</span>
+                      </Label>
+                      <div className="flex items-center space-x-4 mt-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="tobaccoUseYes"
+                            checked={formData.tobaccoUse === true}
+                            onCheckedChange={(checked) => {
+                              if (checked) handleChange('tobaccoUse', true)
+                            }}
+                            className={`${styles.checkbox} ${errors.tobaccoUse ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                            data-error={errors.tobaccoUse || undefined}
+                          />
+                          <Label htmlFor="tobaccoUseYes">Yes</Label>
                         </div>
-                      )}
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="tobaccoUseNo"
+                            checked={formData.tobaccoUse === false && formData.tobaccoUse !== ''}
+                            onCheckedChange={(checked) => {
+                              if (checked) handleChange('tobaccoUse', false)
+                            }}
+                            className={styles.checkbox}
+                          />
+                          <Label htmlFor="tobaccoUseNo">No</Label>
+                        </div>
+                      </div>
                     </div>
                     
                     <div className="bg-white p-3 rounded-md">
-                      <Label className="font-medium">Height & Weight</Label>
+                      <Label className="font-medium">
+                        Height & Weight <span className="text-red-500">*</span>
+                      </Label>
                       <div className="grid grid-cols-3 gap-2 mt-2">
                         <div>
-                          <Label htmlFor="heightFeet" className="text-sm">Feet</Label>
+                          <Label htmlFor="heightFeet" className="text-sm">
+                            Feet <span className="text-red-500">*</span>
+                          </Label>
                           <Input 
                             id="heightFeet" 
+                            type="number"
+                            min="3"
+                            max="8"
                             value={formData.heightFeet}
                             onChange={(e) => handleChange('heightFeet', e.target.value)}
-                            className="bg-white text-sm h-8"
+                            className={`bg-white text-sm h-8 ${errors.heightFeet ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                            data-error={errors.heightFeet || undefined}
                           />
                         </div>
                         <div>
-                          <Label htmlFor="heightInches" className="text-sm">Inches</Label>
+                          <Label htmlFor="heightInches" className="text-sm">
+                            Inches <span className="text-red-500">*</span>
+                          </Label>
                           <Input 
                             id="heightInches" 
+                            type="number"
+                            min="0"
+                            max="11"
                             value={formData.heightInches}
                             onChange={(e) => handleChange('heightInches', e.target.value)}
-                            className="bg-white text-sm h-8"
+                            className={`bg-white text-sm h-8 ${errors.heightInches ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                            data-error={errors.heightInches || undefined}
                           />
                         </div>
                         <div>
-                          <Label htmlFor="weight" className="text-sm">Weight (lbs)</Label>
+                          <Label htmlFor="weight" className="text-sm">
+                            Weight (lbs) <span className="text-red-500">*</span>
+                          </Label>
                           <Input 
                             id="weight" 
+                            type="number"
+                            min="50"
+                            max="500"
                             value={formData.weight}
                             onChange={(e) => handleChange('weight', e.target.value)}
-                            className="bg-white text-sm h-8"
+                            className={`bg-white text-sm h-8 ${errors.weight ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                            data-error={errors.weight || undefined}
                           />
                         </div>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="bg-white p-3 rounded-md">
-                    <Label className="font-medium">Medical Conditions</Label>
-                    <div className="grid grid-cols-2 mt-2 gap-y-2 gap-x-6">
+                  <div>
+                    <Label className="font-medium">
+                      Medical Conditions <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-2 mt-2 bg-white p-3 rounded-md">
                       <div className="flex items-center space-x-2">
                         <Checkbox 
                           id="lungDisease"
                           checked={formData.medicalConditions.lungDisease}
                           onCheckedChange={(checked) => handleNestedChange('medicalConditions', 'lungDisease', checked)}
-                          className={styles.checkbox}
+                          className={`${styles.checkbox} ${errors['medicalConditions.lungDisease'] ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                          data-error={errors['medicalConditions.lungDisease'] || undefined}
                         />
                         <Label htmlFor="lungDisease">Lung disease/Asthma/COPD</Label>
                       </div>
@@ -1043,7 +1131,8 @@ export default function ScriptAssistantPage() {
                           id="heartAttack"
                           checked={formData.medicalConditions.heartAttack}
                           onCheckedChange={(checked) => handleNestedChange('medicalConditions', 'heartAttack', checked)}
-                          className={styles.checkbox}
+                          className={`${styles.checkbox} ${errors['medicalConditions.heartAttack'] ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                          data-error={errors['medicalConditions.heartAttack'] || undefined}
                         />
                         <Label htmlFor="heartAttack">Heart attack/Stroke/TIA/Stents</Label>
                       </div>
@@ -1052,7 +1141,8 @@ export default function ScriptAssistantPage() {
                           id="chf"
                           checked={formData.medicalConditions.chf}
                           onCheckedChange={(checked) => handleNestedChange('medicalConditions', 'chf', checked)}
-                          className={styles.checkbox}
+                          className={`${styles.checkbox} ${errors['medicalConditions.chf'] ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                          data-error={errors['medicalConditions.chf'] || undefined}
                         />
                         <Label htmlFor="chf">Congestive heart failure</Label>
                       </div>
@@ -1061,7 +1151,8 @@ export default function ScriptAssistantPage() {
                           id="bloodClots"
                           checked={formData.medicalConditions.bloodClots}
                           onCheckedChange={(checked) => handleNestedChange('medicalConditions', 'bloodClots', checked)}
-                          className={styles.checkbox}
+                          className={`${styles.checkbox} ${errors['medicalConditions.bloodClots'] ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                          data-error={errors['medicalConditions.bloodClots'] || undefined}
                         />
                         <Label htmlFor="bloodClots">Blood clots</Label>
                       </div>
@@ -1070,7 +1161,8 @@ export default function ScriptAssistantPage() {
                           id="cancer"
                           checked={formData.medicalConditions.cancer}
                           onCheckedChange={(checked) => handleNestedChange('medicalConditions', 'cancer', checked)}
-                          className={styles.checkbox}
+                          className={`${styles.checkbox} ${errors['medicalConditions.cancer'] ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                          data-error={errors['medicalConditions.cancer'] || undefined}
                         />
                         <Label htmlFor="cancer">Cancer</Label>
                       </div>
@@ -1079,7 +1171,8 @@ export default function ScriptAssistantPage() {
                           id="diabetes"
                           checked={formData.medicalConditions.diabetes}
                           onCheckedChange={(checked) => handleNestedChange('medicalConditions', 'diabetes', checked)}
-                          className={styles.checkbox}
+                          className={`${styles.checkbox} ${errors['medicalConditions.diabetes'] ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                          data-error={errors['medicalConditions.diabetes'] || undefined}
                         />
                         <Label htmlFor="diabetes">Diabetes/Neuropathy/Amputation</Label>
                       </div>
@@ -1088,7 +1181,8 @@ export default function ScriptAssistantPage() {
                           id="highBP"
                           checked={formData.medicalConditions.highBP}
                           onCheckedChange={(checked) => handleNestedChange('medicalConditions', 'highBP', checked)}
-                          className={styles.checkbox}
+                          className={`${styles.checkbox} ${errors['medicalConditions.highBP'] ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                          data-error={errors['medicalConditions.highBP'] || undefined}
                         />
                         <Label htmlFor="highBP">High blood pressure</Label>
                       </div>
@@ -1097,7 +1191,8 @@ export default function ScriptAssistantPage() {
                           id="highCholesterol"
                           checked={formData.medicalConditions.highCholesterol}
                           onCheckedChange={(checked) => handleNestedChange('medicalConditions', 'highCholesterol', checked)}
-                          className={styles.checkbox}
+                          className={`${styles.checkbox} ${errors['medicalConditions.highCholesterol'] ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                          data-error={errors['medicalConditions.highCholesterol'] || undefined}
                         />
                         <Label htmlFor="highCholesterol">High cholesterol</Label>
                       </div>
@@ -1201,13 +1296,16 @@ export default function ScriptAssistantPage() {
                   
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <Label htmlFor="coverageAmount" className="font-medium">Coverage Amount</Label>
+                      <Label htmlFor="coverageAmount" className="font-medium">
+                        Coverage Amount <span className="text-red-500">*</span>
+                      </Label>
                       <Input 
                         id="coverageAmount" 
                         placeholder="$10,000"
                         value={formData.coverageAmount}
                         onChange={(e) => handleChange('coverageAmount', e.target.value)}
-                        className="bg-white"
+                        className={`bg-white ${errors.coverageAmount ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                        data-error={errors.coverageAmount || undefined}
                       />
                     </div>
                     <div>
@@ -1253,14 +1351,15 @@ export default function ScriptAssistantPage() {
                     </div>
                     <div>
                       <Label htmlFor="policyNumber" className="font-medium">
-                        Policy #
+                        Policy # <span className="text-red-500">*</span>
                       </Label>
                       <Input 
                         id="policyNumber" 
                         placeholder="e.g. POL-12345678"
                         value={formData.policyNumber}
                         onChange={(e) => handleChange('policyNumber', e.target.value)}
-                        className="bg-white"
+                        className={`bg-white ${errors.policyNumber ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                        data-error={errors.policyNumber || undefined}
                       />
                     </div>
                   </div>
@@ -1312,26 +1411,28 @@ export default function ScriptAssistantPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="policySubmitDate" className="font-medium">
-                        Policy Submit Date
+                        Policy Submit Date <span className="text-red-500">*</span>
                       </Label>
                       <Input 
                         id="policySubmitDate" 
                         type="date"
                         value={formData.policySubmitDate}
                         onChange={(e) => handleChange('policySubmitDate', e.target.value)}
-                        className="bg-white"
+                        className={`bg-white ${errors.policySubmitDate ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                        data-error={errors.policySubmitDate || undefined}
                       />
                     </div>
                     <div>
                       <Label htmlFor="effectivePolicyDate" className="font-medium">
-                        Effective Policy Date
+                        Effective Policy Date <span className="text-red-500">*</span>
                       </Label>
                       <Input 
                         id="effectivePolicyDate" 
                         type="date"
                         value={formData.effectivePolicyDate}
                         onChange={(e) => handleChange('effectivePolicyDate', e.target.value)}
-                        className="bg-white"
+                        className={`bg-white ${errors.effectivePolicyDate ? 'border-red-500 ring-1 ring-red-500' : ''}`}
+                        data-error={errors.effectivePolicyDate || undefined}
                       />
                     </div>
                   </div>
@@ -1356,12 +1457,14 @@ export default function ScriptAssistantPage() {
                       </Select>
                     </div>
                     <div>
-                      <Label className="font-medium">Paid Status</Label>
+                      <Label className="font-medium">
+                        Paid Status <span className="text-red-500">*</span>
+                      </Label>
                       <Select
                         value={formData.paidStatus}
                         onValueChange={(value) => handleChange('paidStatus', value)}
                       >
-                        <SelectTrigger className={styles.select}>
+                        <SelectTrigger className={`${styles.select} ${errors.paidStatus ? 'border-red-500 ring-1 ring-red-500' : ''}`} data-error={errors.paidStatus || undefined}>
                           <SelectValue placeholder="Select paid status" />
                         </SelectTrigger>
                         <SelectContent className={styles.selectContent}>
