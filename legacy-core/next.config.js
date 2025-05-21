@@ -148,7 +148,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
     // Add domains if needed for remote images
-    domains: ['localhost'],
+    domains: ['localhost', 'legacycore.io', 'legacycore.vercel.app'] ,
     // Ensure images work in Vercel deployment
     remotePatterns: [
       {

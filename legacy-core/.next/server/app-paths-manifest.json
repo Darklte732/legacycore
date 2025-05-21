@@ -1,7 +1,1 @@
-{
-  "/agent/commissions/page": "app/agent/commissions/page.js",
-  "/agent/script-assistant/page": "app/agent/script-assistant/page.js",
-  "/agent/applications/page": "app/agent/applications/page.js",
-  "/agent/dashboard/page": "app/agent/dashboard/page.js",
-  "/agent/applications/[id]/edit/page": "app/agent/applications/[id]/edit/page.js"
-}
+{}
