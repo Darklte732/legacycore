@@ -51,12 +51,16 @@ function copyPublicFolder() {
       { source: 'gerber logo.png', target: 'gerber-logo.png' },
       { source: 'gerber-logo.png', target: 'gerber logo.png' },
       { source: 'aetna logo.png', target: 'aetna-logo.png' },
-      { source: 'aetna-logo.png', target: 'aetna logo.png' }
+
+      { source: 'aetna-logo.png', target: 'aetna logo.png' },
+      { source: 'legacy logo.png', target: 'legacy-logo.png' },
+      { source: 'legacy-logo.png', target: 'legacy logo.png' },
+      { source: 'logo.png', target: 'logo.png' }
     ];
     
     logoMappings.forEach(mapping => {
-      const sourcePath = path.join(dest, mapping.source);
-      const targetPath = path.join(dest, mapping.target);
+      const sourcePath = path.join(dest, 'images', mapping.source);
+      const targetPath = path.join(dest, 'images', mapping.target);
       
       if (existsSync(sourcePath) && !existsSync(targetPath)) {
         try {
@@ -146,9 +150,9 @@ const nextConfig = {
   },
   // Enable static image optimization
   images: {
-    unoptimized: true,
+    unoptimized: false,
     // Add domains if needed for remote images
-    domains: ['localhost', 'legacycore.io', 'legacycore.vercel.app'] ,
+    domains: ['localhost', 'legacycore.io', 'www.legacycore.io', 'vercel.app'],
     // Ensure images work in Vercel deployment
     remotePatterns: [
       {

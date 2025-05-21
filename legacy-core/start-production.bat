@@ -1,3 +1,0 @@
-@echo off
-echo Starting LegacyCore in Production Mode...
-powershell -ExecutionPolicy Bypass -File "%~dp0run-production.ps1" 
