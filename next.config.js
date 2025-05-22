@@ -17,6 +17,12 @@ function copyPublicFolder() {
     
     // Helper to copy files recursively
     function copyRecursive(src, dst) {
+      // Check if source exists before attempting to read
+      if (!existsSync(src)) {
+        console.log(`Source directory does not exist: ${src}`);
+        return;
+      }
+      
       // Get all files/directories in source
       const entries = readdirSync(src, { withFileTypes: true });
       
@@ -91,6 +97,12 @@ function copyStaticFolder() {
     
     // Helper to copy files recursively
     function copyRecursive(src, dst) {
+      // Check if source exists before attempting to read
+      if (!existsSync(src)) {
+        console.log(`Source directory does not exist: ${src}`);
+        return;
+      }
+      
       // Get all files/directories in source
       const entries = readdirSync(src, { withFileTypes: true });
       
@@ -222,6 +234,14 @@ const nextConfig = {
           compiler.hooks.afterEmit.tapPromise('CopyPublicAndStaticFolders', async () => {
             // Copy public folder to standalone output
             copyPublicFolder();
+            
+            // Ensure static folder exists
+            const staticPath = path.join(__dirname, '.next/static');
+            if (!existsSync(staticPath)) {
+              console.log(`Creating missing static folder: ${staticPath}`);
+              mkdirSync(staticPath, { recursive: true });
+            }
+            
             // Copy static folder to standalone output
             copyStaticFolder();
             return Promise.resolve();
