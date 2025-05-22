@@ -1,0 +1,479 @@
+/* Custom styles to fix dialog transparency issues */
+
+/* Force solid backdrop for dialog */
+[data-overlay-backdrop="true"]::before {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  opacity: 1 !important;
+}
+
+/* Ensure dialog content has solid background */
+[cmdk-dialog],
+[data-ctx],
+[role="dialog"],
+[aria-modal="true"] {
+  background-color: white !important;
+}
+
+/* Fix select dropdown transparency */
+[cmdk-list],
+[role="listbox"],
+[data-radix-popper-content-wrapper] {
+  background-color: white !important;
+}
+
+/* Fix dialog content background */
+.bg-background {
+  background-color: white !important;
+}
+
+/* Fix Radix dialog content and overlay */
+[data-radix-dialog-content] {
+  background-color: white !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-radix-dialog-overlay] {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Fix SelectContent transparency */
+.SelectContent,
+[data-radix-select-content] {
+  background-color: white !important;
+}
+
+/* Ensure dialog buttons are solid */
+.DialogFooter button,
+[role="dialog"] button {
+  opacity: 1 !important;
+  background-color: var(--background) !important;
+}
+
+/* Fix textarea and input fields */
+textarea, 
+input, 
+select {
+  background-color: white !important;
+}
+
+/* Fix dropdown positioning */
+[data-radix-popper-content-wrapper] {
+  z-index: 1000 !important;
+} 
+
+/* Enhanced Mapping Interface Styles for Millennials */
+
+/* Layout container for both mapping and preview */
+.mapping-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+/* Mapping container with improved visuals */
+.column-mapping-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Compact mapping container for side-by-side layout */
+.mapping-compact .column-mapping-container {
+  max-height: 350px;
+}
+
+/* Styling for mapping cards */
+.mapping-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mapping-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  border-color: #818cf8;
+}
+
+/* Header and label styling */
+.mapping-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.mapping-header svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.8;
+}
+
+/* Data preview container */
+.data-preview-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.data-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+/* Table styling improvements */
+.mapping-table {
+  width: 100%;
+  overflow: auto;
+}
+
+.mapping-table-container {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+}
+
+.mapping-table th, .mapping-table td {
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Progress bar enhancements */
+.mapping-progress {
+  background-color: #e2e8f0;
+  height: 8px;
+}
+
+.mapping-progress [role="progressbar"] {
+  background: linear-gradient(to right, #4f46e5, #818cf8) !important;
+  transition: width 0.3s ease !important;
+}
+
+/* Badge for mapped status */
+.mapping-status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.625rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 1rem;
+}
+
+.mapping-status.mapped {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.mapping-status.unmapped {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+/* Sample text styling */
+.sample-text {
+  font-size: 0.75rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Compact selectors */
+.mapping-card .select-trigger {
+  background: white;
+}
+
+/* Helper text at bottom */
+.mapping-helper {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: #f0f9ff;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: #1e40af;
+}
+
+.mapping-helper svg {
+  margin-top: 1px;
+}
+
+/* Make dialog taller to fit content */
+.mapping-dialog {
+  max-height: 80vh !important;
+  background-color: white !important;
+}
+
+/* Fix for vertical line issue in textarea */
+.mapping-dialog textarea {
+  border: none !important;
+  outline: 1px solid #e2e8f0 !important;
+  resize: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+/* Remove any vertical separators */
+.mapping-dialog .vertical-line,
+.mapping-dialog .vertical-separator,
+.mapping-dialog .vertical-divider,
+.mapping-dialog *[class*="divider"] {
+  display: none !important;
+}
+
+/* Target the Paste Data section specifically */
+.mapping-dialog button + button + div textarea {
+  border-left: none !important;
+  border-right: none !important;
+}
+
+/* Reset background styles for textarea */
+.mapping-dialog textarea::before,
+.mapping-dialog textarea::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .mapping-layout {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* New Paste Data Container Styles */
+.paste-data-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background-color: white;
+  overflow: hidden;
+}
+
+.paste-data-header {
+  padding: 10px 16px;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.paste-data-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.paste-data-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: white !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+/* Remove ALL dividers inside the dialog */
+.mapping-dialog *::before,
+.mapping-dialog *::after {
+  display: none !important;
+  content: none !important;
+  border: none !important;
+}
+
+.mapping-dialog * {
+  background-image: none !important;
+}
+
+/* Target every element in the dialog to ensure no dividers */
+.mapping-dialog div,
+.mapping-dialog button,
+.mapping-dialog textarea,
+.mapping-dialog input {
+  border-left: none !important;
+  border-right: none !important;
+}
+
+/* Override any existing borders that might display as dividers */
+[role="dialog"] textarea,
+[role="dialog"] .DialogContent textarea,
+[role="dialog"] [data-state="active"] textarea {
+  border: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  box-shadow: none !important;
+}
+
+/* Make absolutely sure no vertical borders exist anywhere in the dialog */
+[role="dialog"] *,
+[data-state="open"] * {
+  border-left-width: 0 !important;
+  border-right-width: 0 !important;
+}
+
+/* Add bottom margin to the method selection buttons */
+.mapping-dialog .grid-cols-2 {
+  margin-bottom: 1rem;
+}
+
+/* Additional Bulk Import specific styles */
+.bulk-import-container {
+  position: relative;
+}
+
+.method-selection-grid {
+  margin-bottom: 20px !important;
+}
+
+.import-interface-container {
+  position: relative;
+  margin-top: 20px !important;
+}
+
+/* Ensure no vertical lines in the paste data option */
+[data-state="open"] .paste-data-container::before,
+[data-state="open"] .paste-data-container::after,
+[data-state="open"] .paste-data-container *::before,
+[data-state="open"] .paste-data-container *::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Override any styling that might create visual dividers */
+.paste-data-container,
+.paste-data-container * {
+  box-shadow: none !important;
+  background-image: none !important;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+/* Remove any potential divider or separator that might be inserted by the framework */
+.mapping-dialog div[role="separator"],
+.mapping-dialog hr,
+.mapping-dialog [data-orientation="vertical"] {
+  display: none !important;
+}
+
+/* Force the import button to not have a divider */
+.DialogFooter button {
+  border: 1px solid #e2e8f0 !important;
+  border-left: 1px solid #e2e8f0 !important;
+  border-right: 1px solid #e2e8f0 !important;
+}
+
+/* Method selection button specific overrides */
+.method-selection-grid button {
+  border: 1px solid #e2e8f0 !important;
+  background-image: none !important;
+  position: relative;
+  box-shadow: none !important;
+}
+
+.method-selection-grid button::before,
+.method-selection-grid button::after {
+  display: none !important;
+  content: none !important;
+}
+
+.method-selection-grid button svg {
+  color: currentColor;
+}
+
+/* Completely reset any dividers in the entire dialog */
+.mapping-dialog * {
+  background-image: none !important;
+}
+
+/* Target any possible dividers in buttons and textareas */
+button::before, button::after,
+textarea::before, textarea::after,
+div::before, div::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Remove any existing divider styling for the tabs in the entire app */
+[role="tablist"]::before,
+[role="tablist"]::after,
+[role="tab"]::before,
+[role="tab"]::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* No dividers class - use this to force remove all dividers */
+.no-dividers {
+  border-left: none !important;
+  border-right: none !important;
+  background-image: none !important;
+  position: relative !important;
+}
+
+.no-dividers::before,
+.no-dividers::after {
+  display: none !important;
+  content: none !important;
+  border: none !important;
+}
+
+/* Textarea wrapper to prevent dividers */
+.textarea-wrapper {
+  position: relative;
+  display: block;
+  width: 100%;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+.textarea-wrapper::before,
+.textarea-wrapper::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Paste data container overrides */
+.paste-data-container {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  background-color: white !important;
+}
+
+/* Override the textarea component completely */
+.paste-data-textarea {
+  width: 100% !important;
+  padding: 12px 16px !important;
+  background-color: white !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+/* Override Radix specific divider styling if used */
+[data-radix-popper-content-wrapper] * {
+  border-left: none !important;
+  border-right: none !important;
+} 
